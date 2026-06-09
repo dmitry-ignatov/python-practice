@@ -34,55 +34,65 @@ def count_above_average(expenses):
 expenses = []
 
 while True:
-    print()
-    print("1 — Добавить расход")
+    print("\n1 — Добавить расход")
     print("2 — Показать статистику")
     print("3 — Показать все расходы")
     print("4 — Очистить все расходы")
-    print("0 — Выйти")
-    print()
+    print("5 — Удалить расход")
+    print("0 — Выйти\n")
+
     try:
         command = int(input("Введите команду: "))
-    except:
-        print()
-        print("Неверное значение, введите число")
+    except ValueError:
+        print("\nНеверное значение, введите число\n")
         continue
     if command == 1:
-        print()
         try:
-            expenses.append(int(input("Введите расход: ")))
-        except:
-            print()   
-            print("Неверное значение, введите число") 
+            expenses.append(int(input("\nВведите расход: ")))
+        except ValueError:   
+            print("\nНеверное значение, введите число") 
             continue
     elif command == 2 and expenses == []:
-        print()
-        print("Вы не ввели расход")
+        print("\nВы не ввели расход")
     elif command == 2:
-        print()
-        print(f"Общая сумма: {calculate_total(expenses)}")
+        print(f"\nОбщая сумма: {calculate_total(expenses)}")
         print(f"Средний расход: {calculate_average(expenses)}")
         print(f"Самый большой расход: {find_biggest_expense(expenses)}")
         print(f"Самый маленький расход: {find_smallest_expense(expenses)}")
         print(f"Расходов выше среднего: {count_above_average(expenses)}")
     elif command == 3 and expenses == []:
-        print()
-        print("Расходы не введены")
+        print("\nРасходы не введены")
     elif command == 3:
-        print("Все расходы:")
+        print("\nВсе расходы:")
         schet = 0
         for exp in expenses:
             schet += 1
             print(f"Расход {schet}: {exp}")
     elif command == 4 and expenses == []:
-        print()
-        print("Расходы не введены")
+        print("\nРасходы не введены")
     elif command == 4:
         expenses.clear()
-        print()
-        print("Все расходы очищены")
+        print("\nВсе расходы очищены")
+    elif command == 5 and expenses == []:
+        print("\nРасходы не введены")
+    elif command == 5:
+        print("\nВсе расходы:")
+        schet = 0
+        for exp in expenses:
+            schet += 1
+            print(f"Расход {schet}: {exp}")
+        try:
+            del_exp = int(input("\nВведите номер расхода для удаления: ")) - 1         
+        except ValueError:  
+            print("\nНеверное значение, введите число")
+            continue
+        if del_exp >= len(expenses) or del_exp < 0:
+            print("\nНеверный номер расхода")
+        else:
+            expenses.pop(del_exp)
+            print("Расход удален")
     
     elif command == 0:
         break
     else:
-        print("Введена неверная команда")
+        print("\nВведена неверная команда")
