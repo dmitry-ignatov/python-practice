@@ -33,7 +33,6 @@ def count_above_average(data):
 
 
 
-
 expenses = []
 
 def show_expenses(data):
@@ -55,7 +54,7 @@ def show_menu():
     print("8 — Загрузить расходы из файла")
     print("0 — Выйти\n")
 
-def stat(data):
+def get_statistics_text(data):
     text = ""
     text +=f"\nОбщая сумма: {calculate_total(data)}"
     text +=f"\nСредний расход: {calculate_average(data)}"
@@ -63,6 +62,39 @@ def stat(data):
     text +=f"\nСамый маленький расход: {find_smallest_expense(data)}"
     text +=f"\nРасходов выше среднего: {count_above_average(data)}"
     return text
+
+def save_expenses(data):
+    with open("expenses.txt", "w") as file:
+        for exp in data:
+            file.write(f"{exp}\n")
+    with open("expenses_report.txt", "w") as file:
+        file.write("Отчёт по расходам\n\n")
+        for index, exp in enumerate(data, start=1):
+            file.write(f"Расход {index}: {exp}\n")
+        file.write(get_statistics_text(data))
+    print("\nРасходы сохранены в expenses.txt и expenses_report.txt")
+
+def load_expenses(data):
+    temp_expenses = []
+    try:
+        with open("expenses.txt", "r") as file:                         
+            for line in file:
+                exp = int(line.strip())
+                if exp <= 0:
+                    raise ValueError
+                else:
+                    temp_expenses.append(exp)
+            if not temp_expenses:
+                print("\nФайл expenses.txt пустой")
+            else:    
+                data.clear()
+                data.extend(temp_expenses)
+                print("\nРасходы загружены из expenses.txt")
+    except FileNotFoundError:
+        print("\nФайл expenses.txt не найден")
+    except ValueError:
+        print("\nФайл expenses.txt содержит некорректные данные")
+
 
 while True:
     show_menu()
@@ -75,7 +107,11 @@ while True:
 
     if command == 1:
         try:
-            expenses.append(int(input("\nВведите расход: ")))
+           new_exp = int(input("\nВведите расход: "))
+           if new_exp <= 0:
+                print("\nРасход должен быть больше нуля")
+           else:
+               expenses.append(new_exp)
         except ValueError:   
             print("\nНеверное значение, введите число") 
             continue
@@ -83,7 +119,7 @@ while True:
     elif command == 2 and expenses == []:
         print("\nВы не ввели расход")
     elif command == 2:
-        print(stat(expenses))
+        print(get_statistics_text(expenses))
 
     elif command == 3 and expenses == []:
         print("\nРасходы не введены")
@@ -124,40 +160,27 @@ while True:
             print("\nНеверный номер расхода")
         else:
             try:
-                new_exp = int(input("\nВведите новый расход: ")) 
+                new_exp = int(input("\nВведите новый расход: "))
+                if new_exp <= 0:
+                     print("\nРасход должен быть больше нуля")
+                else:
+                    expenses[change_exp] = new_exp
+                    print("Расход изменен")
             except ValueError:
                 print("\nНеверное значение, введите число")
                 continue
-            expenses[change_exp] = new_exp
-            print("Расход изменен") 
+             
 
     elif command == 7 and expenses == []:    
         print("\nРасходы не введены")
     elif command == 7:
-        with open("expenses.txt", "w") as file:
-            for exp in expenses:
-                file.write(f"{exp}\n")
-        with open("expenses_report.txt", "w") as file:
-            file.write("Отчёт по расходам\n\n")
-            for index, exp in enumerate(expenses, start=1):
-                file.write(f"Расход {index}: {exp}\n")
-            file.write(stat(expenses))
-        print("\nРасходы сохранены в expenses.txt и expenses_report.txt")
+        save_expenses(expenses)
     
     elif command == 8:
-        try:
-            with open("expenses.txt", "r") as file:
-                expenses.clear()
-                for line in file:
-                    expenses.append(int(line.strip()))
-                print("\nРасходы загружены из expenses.txt")
-        except FileNotFoundError:
-            print("\nФайл expenses.txt не найден")
-        except ValueError:
-            print("\nФайл expenses.txt содержит некорректные данные")
-        
+        load_expenses(expenses)       
 
     elif command == 0:
         break
+    
     else:
         print("\nВведена неверная команда")
