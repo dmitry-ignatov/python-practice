@@ -28,34 +28,43 @@ while True:
     name = input("Введите имя файла: ")
     if name == "":
         print("Пустое имя файла нельзя добавить")
+
     elif name.lower() == "stop":
         break
+
     else:
         files.append(name)
-    
-categories = {    
-    "image": [],
-    "audio": [],
-    "document": [],
-    "archive": [],
-    "unknown": []
-}
 
-print()
+if not files:
+    print("\nФайлы не добавлены\n")
+else:
+    categories = {    
+        "image": [],
+        "audio": [],
+        "document": [],
+        "archive": [],
+        "unknown": []
+    }
 
-for file in files:
+    print()
 
-    category = get_category(file)
-    print(f"{file} — {category}")
+    for file in files:
 
-    categories[category].append(file)
-        
-   
-        
+        category = get_category(file)
+        print(f"{file} — {category}")
+
+        categories[category].append(file)
 
 
-print(f"\nImages: {categories['image']}")
-print(f"Audio: {categories['audio']}")
-print(f"Documents: {categories['document']}")
-print(f"Archives: {categories['archive']}")
-print(f"Unknown: {categories['unknown']}")
+    print(f"\nImages: {categories['image']}")
+    print(f"Audio: {categories['audio']}")
+    print(f"Documents: {categories['document']}")
+    print(f"Archives: {categories['archive']}")
+    print(f"Unknown: {categories['unknown']}")
+
+    print(f"\nTotal files: {len(files)}")
+    print(f"Images count: {len(categories['image'])}")
+    print(f"Audio count: {len(categories['audio'])}")
+    print(f"Documents count: {len(categories['document'])}")
+    print(f"Archives count: {len(categories['archive'])}")
+    print(f"Unknown count: {len(categories['unknown'])}")
