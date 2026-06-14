@@ -58,18 +58,14 @@ def sort_files(files):
 
 
 def show_results(files, categories):
-    print(f"\nImages: {categories['image']}")
-    print(f"Audio: {categories['audio']}")
-    print(f"Documents: {categories['document']}")
-    print(f"Archives: {categories['archive']}")
-    print(f"Unknown: {categories['unknown']}")
+
+    print()
+    for category, file_list in categories.items():
+        print(f"{category}: {file_list}")    
 
     print(f"\nTotal files: {len(files)}")
-    print(f"Images count: {len(categories['image'])}")
-    print(f"Audio count: {len(categories['audio'])}")
-    print(f"Documents count: {len(categories['document'])}")
-    print(f"Archives count: {len(categories['archive'])}")
-    print(f"Unknown count: {len(categories['unknown'])}")
+    for category, file_list in categories.items():
+        print(f"Count of {category}: {len(file_list)}")
 
 
 files = get_files()
