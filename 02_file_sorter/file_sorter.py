@@ -39,9 +39,8 @@ def get_files():
     return files
 
 
-def sort_files(data):
+def sort_files(files):
 
-    
     categories = {    
         "image": [],
         "audio": [],
@@ -50,25 +49,15 @@ def sort_files(data):
         "unknown": []
     }
 
-    print()
-
-    for file in data:
+    for file in files:
 
         category = get_category(file)
-        print(f"{file} — {category}")
-
         categories[category].append(file)
+
     return categories
 
 
-files = get_files()
-
-if not files:
-    print("\nФайлы не добавлены\n")
-    
-else:
-    categories = sort_files(files)
-
+def show_results(files, categories):
     print(f"\nImages: {categories['image']}")
     print(f"Audio: {categories['audio']}")
     print(f"Documents: {categories['document']}")
@@ -81,3 +70,15 @@ else:
     print(f"Documents count: {len(categories['document'])}")
     print(f"Archives count: {len(categories['archive'])}")
     print(f"Unknown count: {len(categories['unknown'])}")
+
+
+files = get_files()
+
+if not files:
+    print("\nФайлы не добавлены\n")
+    
+else:
+    categories = sort_files(files)
+    show_results(files, categories)
+
+    
