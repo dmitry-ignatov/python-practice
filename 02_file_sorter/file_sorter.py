@@ -1,18 +1,5 @@
 
-files = []
 
-
-while True:
-
-    name = input("Введите имя файла: ")
-    if name == "":
-        print("Пустое имя файла нельзя добавить")
-    elif name.lower() == "stop":
-        break
-    else:
-        files.append(name)
-
-    
 def get_category(data):
 
     data_lower = data.lower()
@@ -31,14 +18,28 @@ def get_category(data):
         
     else:
         return "unknown"
+
+
+files = []
+
+
+while True:
+
+    name = input("Введите имя файла: ")
+    if name == "":
+        print("Пустое имя файла нельзя добавить")
+    elif name.lower() == "stop":
+        break
+    else:
+        files.append(name)
     
-        
-    
-img = []
-aud = []
-doc = []
-arc = []
-unk = []
+categories = {    
+    "image": [],
+    "audio": [],
+    "document": [],
+    "archive": [],
+    "unknown": []
+}
 
 print()
 
@@ -47,25 +48,14 @@ for file in files:
     category = get_category(file)
     print(f"{file} — {category}")
 
-    if category == "image":           
-        img.append(file)
+    categories[category].append(file)
         
-    elif category == "audio":        
-        aud.append(file)
-        
-    elif category == "document":        
-        doc.append(file)      
-
-    elif category == "archive":        
-        arc.append(file)
-        
-    else:        
-        unk.append(file)
+   
         
 
 
-print(f"\nImages: {img}")
-print(f"Audio: {aud}")
-print(f"Documents: {doc}")
-print(f"Archives: {arc}")
-print(f"Unknown: {unk}")
+print(f"\nImages: {categories['image']}")
+print(f"Audio: {categories['audio']}")
+print(f"Documents: {categories['document']}")
+print(f"Archives: {categories['archive']}")
+print(f"Unknown: {categories['unknown']}")
