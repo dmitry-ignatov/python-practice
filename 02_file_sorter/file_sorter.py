@@ -20,24 +20,28 @@ def get_category(data):
         return "unknown"
 
 
-files = []
+def get_files():
+
+    files = []
+
+    while True:
+
+        name = input("Введите имя файла: ")
+        if name == "":
+            print("Пустое имя файла нельзя добавить")
+
+        elif name.lower() == "stop":
+            break
+
+        else:
+            files.append(name)
+
+    return files
 
 
-while True:
+def sort_files(data):
 
-    name = input("Введите имя файла: ")
-    if name == "":
-        print("Пустое имя файла нельзя добавить")
-
-    elif name.lower() == "stop":
-        break
-
-    else:
-        files.append(name)
-
-if not files:
-    print("\nФайлы не добавлены\n")
-else:
+    
     categories = {    
         "image": [],
         "audio": [],
@@ -48,13 +52,22 @@ else:
 
     print()
 
-    for file in files:
+    for file in data:
 
         category = get_category(file)
         print(f"{file} — {category}")
 
         categories[category].append(file)
+    return categories
 
+
+files = get_files()
+
+if not files:
+    print("\nФайлы не добавлены\n")
+    
+else:
+    categories = sort_files(files)
 
     print(f"\nImages: {categories['image']}")
     print(f"Audio: {categories['audio']}")
