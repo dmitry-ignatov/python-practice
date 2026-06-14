@@ -7,13 +7,32 @@ while True:
     name = input("Введите имя файла: ")
     if name == "":
         print("Пустое имя файла нельзя добавить")
-    elif name == "stop":
+    elif name.lower() == "stop":
         break
     else:
         files.append(name)
 
     
+def get_category(data):
 
+    data_lower = data.lower()
+    
+    if data_lower.endswith(".png") or data_lower.endswith(".jpg"):
+        return "image"
+        
+    elif data_lower.endswith(".mp3") or data_lower.endswith(".wav"):
+        return "audio"
+        
+    elif data_lower.endswith(".pdf") or data_lower.endswith(".txt"):
+        return "document"      
+
+    elif data_lower.endswith(".zip") or data_lower.endswith(".rar"):
+        return "archive"
+        
+    else:
+        return "unknown"
+    
+        
     
 img = []
 aud = []
@@ -25,24 +44,22 @@ print()
 
 for file in files:
 
-    if file.endswith(".png") or file.endswith(".jpg"):
-        print(f"{file} — image")
+    category = get_category(file)
+    print(f"{file} — {category}")
+
+    if category == "image":           
         img.append(file)
         
-    elif file.endswith(".mp3") or file.endswith(".wav"):
-        print(f"{file} — audio")
+    elif category == "audio":        
         aud.append(file)
         
-    elif file.endswith(".pdf") or file.endswith(".txt"):
-        print(f"{file} — document")
+    elif category == "document":        
         doc.append(file)      
 
-    elif file.endswith(".zip") or file.endswith(".rar"):
-        print(f"{file} — archive")
+    elif category == "archive":        
         arc.append(file)
         
-    else:
-        print(f"{file} — unknown")
+    else:        
         unk.append(file)
         
 
