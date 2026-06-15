@@ -1,26 +1,31 @@
 
 
+def normalize_spaces(text):
+    words = text.split()
+    text_normalized = " ".join(words)
+    return text_normalized
+
+
 def get_texts():
 
     texts = []
-    texts_low = []
+    texts_lower = []
 
     while True:
 
         text = input("Введите текст: ")
-        
-        clean_text = text.strip()
-        check_text = clean_text.lower()
+        text_normalized = normalize_spaces(text)        
+        check_text = text_normalized.lower()
         
         if check_text == "stop":
             break
-        elif not clean_text:
+        elif not text_normalized:
             print("Нужно ввести текст")
-        elif check_text in texts_low:
+        elif check_text in texts_lower:
             print("Такая строка уже есть")
         else:
-            texts_low.append(check_text)
-            texts.append(clean_text)
+            texts_lower.append(check_text)
+            texts.append(text_normalized)
     return texts
 
 
@@ -31,5 +36,11 @@ def show_texts(texts):
         print(", ".join(texts))
         print(f"\nКоличество строк: {len(texts)}")
 
+
+def sort_texts(texts):
+    texts.sort()
+
+
 texts = get_texts()
+sort_texts(texts)
 show_texts(texts)
