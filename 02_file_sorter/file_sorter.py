@@ -64,7 +64,7 @@ def show_results(files, categories):
         if not file_list:
             print(f"{category}: Файлов нет")
         else:
-            print(f"{category}: {", ".join(file_list)}")         
+            print(f"{category}: {', '.join(file_list)}")         
 
     print(f"\nTotal files: {len(files)}")
     for category, file_list in categories.items():
