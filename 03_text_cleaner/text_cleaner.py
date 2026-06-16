@@ -14,7 +14,7 @@ def get_texts():
     while True:
 
         text = input("Введите текст: ")
-        text_normalized = normalize_spaces(text)        
+        text_normalized = normalize_spaces(text)
         check_text = text_normalized.lower()
         
         if check_text == "stop":
@@ -33,12 +33,13 @@ def show_texts(texts):
     if not texts:
         print("Строки не добавлены")
     else:
-        print(", ".join(texts))
+        for index, text in enumerate(texts, start=1):
+            print(f"{index}. {text}")
         print(f"\nКоличество строк: {len(texts)}")
 
 
 def sort_texts(texts):
-    texts.sort()
+    texts.sort(key=str.lower)
 
 
 texts = get_texts()
