@@ -43,8 +43,7 @@ def get_filename(texts):
         lower_name_normalized = name_normalized.lower()
         if lower_name_normalized.endswith(".txt"):               
             return name_normalized
-        else:
-            return name_normalized + ".txt"
+        return name_normalized + ".txt"
 
 
 def show_texts(texts):
@@ -72,8 +71,12 @@ def save_texts(texts, filename):
     print(f"\nТекст сохранен в {filename}")
         
 
-texts = get_texts()
-sort_texts(texts)
-show_texts(texts)
-filename = get_filename(texts)
-save_texts(texts, filename)
+def main():
+    texts = get_texts()
+    sort_texts(texts)
+    show_texts(texts)
+    filename = get_filename(texts)
+    save_texts(texts, filename)
+
+
+main()
