@@ -1,6 +1,23 @@
 from pathlib import Path
 
 
+def get_category(extension):
+    if extension == ".png" or extension == ".jpg":
+        return "image"
+        
+    elif extension == ".mp3" or extension == ".wav":
+        return "audio"
+        
+    elif extension == ".pdf" or extension == ".txt":
+        return "document"
+
+    elif extension == ".zip" or extension == ".rar":
+        return "archive"
+        
+    else:
+        return "unknown"
+    
+
 def show_path_info(path, folder_path):
     print(f"\nВы выбрали путь: {path}")
 
@@ -14,8 +31,10 @@ def show_path_info(path, folder_path):
         folder_count = 0
         for index, item in enumerate(folder_path.iterdir(), start=1):
             if item.is_file():
+                extension = item.suffix.lower()
+                category = get_category(extension)
                 file_count += 1
-                print(f"{index}. {item.name} — файл")
+                print(f"{index}. {item.name} — файл, расширение: {extension}, категория: {category}")
             elif item.is_dir():
                 folder_count += 1
                 print(f"{index}. {item.name} — папка")
