@@ -43,6 +43,10 @@ def save_file(texts, filename):
     print(f"\nТекст сохранен в {filename}")
 
 
+def get_lower_name(item):
+    return item.name.lower()
+
+
 def get_report(path, folder_path):
     report_lines = []
     report_lines.append(f"Выбранный путь: {path}")
@@ -58,31 +62,34 @@ def get_report(path, folder_path):
     }
 
     file_count = 0
-    folder_count = 0       
-    for index, item in enumerate(folder_path.iterdir(), start=1):
-        if item.is_file():
-            extension = item.suffix.lower()
-            category = get_category(extension)
-            categories[category].append(item.name)
-            file_count += 1
-            report_lines.append(f"{index}. {item.name} — файл, расширение: {extension}, категория: {category}")
-            
-        elif item.is_dir():
-            folder_count += 1
-            report_lines.append(f"{index}. {item.name} — папка")
-    
-    report_lines.append("")
-    report_lines.append(f"Файлов: {file_count}")
-    report_lines.append(f"Папок: {folder_count}")
-    report_lines.append("")
-    report_lines.append("Категории файлов:")
-    for category_name, file_list in categories.items():
-        report_lines.append(f"{category_name}, количество: {len(file_list)}")
-        for file_name in file_list:
-            report_lines.append(f"- {file_name}")
+    folder_count = 0
+    try:       
+        for index, item in enumerate(sorted(folder_path.iterdir(), key=get_lower_name), start=1):
+            if item.is_file():
+                extension = item.suffix.lower()
+                category = get_category(extension)
+                categories[category].append(item.name)
+                file_count += 1
+                report_lines.append(f"{index}. {item.name} — файл, расширение: {extension}, категория: {category}")
+                
+            elif item.is_dir():
+                folder_count += 1
+                report_lines.append(f"{index}. {item.name} — папка")
+        
         report_lines.append("")
-    print("\n".join(report_lines))
-    return report_lines
+        report_lines.append(f"Файлов: {file_count}")
+        report_lines.append(f"Папок: {folder_count}")
+        report_lines.append("")
+        report_lines.append("Категории файлов:")
+        for category_name, file_list in categories.items():
+            report_lines.append(f"{category_name}, количество: {len(file_list)}")
+            for file_name in file_list:
+                report_lines.append(f"- {file_name}")
+            report_lines.append("")
+        print("\n".join(report_lines))
+        return report_lines
+    except PermissionError:
+        print("Нет доступа к содержимому папки")
 
 
 def show_path_info(path, folder_path):
