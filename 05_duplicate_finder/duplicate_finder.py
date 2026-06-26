@@ -12,13 +12,17 @@ def get_path():
 
 def get_hash(file_path):
 
-    with file_path.open("rb") as file:
-        file_data = file.read()
+    with file_path.open("rb") as file:        
+        hash_object = hashlib.sha256()
+        while True:
+            file_data = file.read(65536)
 
-    hash_object = hashlib.sha256()
-    hash_object.update(file_data)
-    result = hash_object.hexdigest()
-    return result
+            if not file_data:
+                break
+            hash_object.update(file_data)
+
+        result = hash_object.hexdigest()
+        return result
 
 
 def get_files_by_size(folder_path):
