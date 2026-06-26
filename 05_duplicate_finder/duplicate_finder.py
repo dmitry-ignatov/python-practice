@@ -1,4 +1,15 @@
 from pathlib import Path
+import hashlib
+
+
+def get_hash(file_path):
+    with file_path.open("rb") as file:
+        file_data = file.read()
+
+    hash_object = hashlib.sha256()
+    hash_object.update(file_data)
+    result = hash_object.hexdigest()
+    return result
 
 path = input("Введите путь к папке: ")
 folder_path = Path(path)
@@ -8,28 +19,38 @@ if not folder_path.exists():
 elif not folder_path.is_dir():
     print("Путь не является папкой")
 else:
-    files = {}
+    print()
+    files_by_size = {}
     
-    for item in folder_path.iterdir():
+    for file_path in folder_path.iterdir():
 
-        if item.is_file():
-            file_size = item.stat().st_size
+        if file_path.is_file():
+            file_size = file_path.stat().st_size
 
-            if file_size not in files:
-                files[file_size] = []
-            files[file_size].append(item)
+            if file_size not in files_by_size:
+                files_by_size[file_size] = []
+            files_by_size[file_size].append(file_path)
 
     duplicates_found = False
-    for file_size, file_paths in files.items():
+    for file_size, file_paths in files_by_size.items():
         if len(file_paths) >= 2:
-            print(f"Размер файлов: {file_size} байт")
-            print("Кандидаты на дубликаты:")
+
+            files_by_hash = {}
             for file_path in file_paths:
-                print(file_path.name)
-            duplicates_found = True
-            print()
+                file_hash = get_hash(file_path)
+
+                if file_hash not in files_by_hash:
+                    files_by_hash[file_hash] = []
+                files_by_hash[file_hash].append(file_path.name)
+
+            for _, file_names in files_by_hash.items():
+                if len(file_names) >= 2:
+                    duplicates_found = True
+                    print(f"{', '.join(file_names)} - дубликаты")
+   
+    print()
     if not duplicates_found:
-        print("Файлы с одинаковым размером не найдены")
+        print("Одинаковые файлы не найдены")
 
                     
 
