@@ -12,17 +12,21 @@ def get_path():
 
 def get_hash(file_path):
 
-    with file_path.open("rb") as file:        
-        hash_object = hashlib.sha256()
-        while True:
-            file_data = file.read(65536)
+    try:
+        with file_path.open("rb") as file:        
+            hash_object = hashlib.sha256()
+            while True:
+                file_data = file.read(65536)
 
-            if not file_data:
-                break
-            hash_object.update(file_data)
+                if not file_data:
+                    break
+                hash_object.update(file_data)
 
-        result = hash_object.hexdigest()
-        return result
+            result = hash_object.hexdigest()
+            return result
+    except OSError:
+        print(f"Не удалось прочитать файл: {file_path.name}")
+        return None
 
 
 def get_files_by_size(folder_path):
@@ -31,7 +35,11 @@ def get_files_by_size(folder_path):
     for file_path in folder_path.iterdir():
 
         if file_path.is_file():
-            file_size = file_path.stat().st_size
+            try:
+                file_size = file_path.stat().st_size
+            except OSError:
+                print(f"Не удалось получить размер файла: {file_path.name}")
+                continue
 
             if file_size not in files_by_size:
                 files_by_size[file_size] = []
@@ -44,6 +52,8 @@ def get_files_by_hash(file_paths):
     files_by_hash = {}
     for file_path in file_paths:
         file_hash = get_hash(file_path)
+        if file_hash is None:
+            continue
 
         if file_hash not in files_by_hash:
             files_by_hash[file_hash] = []
@@ -66,6 +76,7 @@ def get_duplicates(files_by_size):
     print()
     if not duplicates_found:
         print("Одинаковые файлы не найдены")
+
 
 def main():
 
