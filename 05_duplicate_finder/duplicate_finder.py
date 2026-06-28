@@ -13,7 +13,7 @@ def get_path():
 def get_hash(file_path):
 
     try:
-        with file_path.open("rb") as file:        
+        with file_path.open("rb") as file:
             hash_object = hashlib.sha256()
             while True:
                 file_data = file.read(65536)
@@ -48,7 +48,7 @@ def get_files_by_size(folder_path):
 
 
 def get_files_by_hash(file_paths):
-   
+
     files_by_hash = {}
     for file_path in file_paths:
         file_hash = get_hash(file_path)
@@ -59,7 +59,7 @@ def get_files_by_hash(file_paths):
             files_by_hash[file_hash] = []
         files_by_hash[file_hash].append(file_path)
     return files_by_hash
-    
+
 
 def get_duplicates(files_by_size, folder_path):
 
@@ -69,7 +69,7 @@ def get_duplicates(files_by_size, folder_path):
     print(f"Проверяемая папка: {folder_path}\n")
     for file_paths in files_by_size.values():
         if len(file_paths) >= 2:
-            
+
             files_by_hash = get_files_by_hash(file_paths)
 
             for duplicate_paths in files_by_hash.values():
@@ -77,7 +77,7 @@ def get_duplicates(files_by_size, folder_path):
                     count_of_groups += 1
                     duplicates_found = True
                     print(f"{count_of_groups}. Дубликаты:\n")
-                    
+
                     for duplicate_path in duplicate_paths:
                         print(f"{duplicate_path.name} (путь - {duplicate_path.relative_to(folder_path)})")
                     count_of_extra_copies += len(duplicate_paths) - 1
@@ -97,12 +97,10 @@ def main():
         print("Такого пути нет")
     elif not folder_path.is_dir():
         print("Путь не является папкой")
-    else:   
+    else:
         files_by_size = get_files_by_size(folder_path)
         get_duplicates(files_by_size, folder_path)
 
 
 if __name__ == "__main__":
     main()
-                    
-
