@@ -32,7 +32,7 @@ def get_hash(file_path):
 def get_files_by_size(folder_path):
 
     files_by_size = {}
-    for file_path in folder_path.iterdir():
+    for file_path in folder_path.rglob("*"):
 
         if file_path.is_file():
             try:
@@ -57,23 +57,28 @@ def get_files_by_hash(file_paths):
 
         if file_hash not in files_by_hash:
             files_by_hash[file_hash] = []
-        files_by_hash[file_hash].append(file_path.name)
+        files_by_hash[file_hash].append(file_path)
     return files_by_hash
     
 
 def get_duplicates(files_by_size):
 
     duplicates_found = False
+    count = 0
     for file_paths in files_by_size.values():
         if len(file_paths) >= 2:
+            
             files_by_hash = get_files_by_hash(file_paths)
 
-            for file_names in files_by_hash.values():
-                if len(file_names) >= 2:
+            for duplicate_paths in files_by_hash.values():
+                if len(duplicate_paths) >= 2:
+                    count +=1
                     duplicates_found = True
-                    print(f"{', '.join(file_names)} - дубликаты")
+                    print(f"{count}. Дубликаты:\n")
+                    for duplicate_path in duplicate_paths:
+                        print(f"{duplicate_path.name} (путь - {duplicate_path})")
+                    print()
 
-    print()
     if not duplicates_found:
         print("Одинаковые файлы не найдены")
 
