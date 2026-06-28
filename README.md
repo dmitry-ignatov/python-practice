@@ -147,7 +147,7 @@ python duplicate_finder.py
 * `01_expense_analyzer`;
 * `02_file_sorter`;
 * `03_text_cleaner`;
-* `04_folder_reporter`.
+* `04_folder_reporter`;
 * `05_duplicate_finder`.
 
 Репозиторий продолжает пополняться новыми проектами по мере изучения Python.
