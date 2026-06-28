@@ -61,10 +61,12 @@ def get_files_by_hash(file_paths):
     return files_by_hash
     
 
-def get_duplicates(files_by_size):
+def get_duplicates(files_by_size, folder_path):
 
     duplicates_found = False
-    count = 0
+    count_of_groups = 0
+    count_of_extra_copies = 0
+    print(f"Проверяемая папка: {folder_path}\n")
     for file_paths in files_by_size.values():
         if len(file_paths) >= 2:
             
@@ -72,14 +74,19 @@ def get_duplicates(files_by_size):
 
             for duplicate_paths in files_by_hash.values():
                 if len(duplicate_paths) >= 2:
-                    count +=1
+                    count_of_groups += 1
                     duplicates_found = True
-                    print(f"{count}. Дубликаты:\n")
+                    print(f"{count_of_groups}. Дубликаты:\n")
+                    
                     for duplicate_path in duplicate_paths:
-                        print(f"{duplicate_path.name} (путь - {duplicate_path})")
+                        print(f"{duplicate_path.name} (путь - {duplicate_path.relative_to(folder_path)})")
+                    count_of_extra_copies += len(duplicate_paths) - 1
                     print()
 
-    if not duplicates_found:
+    if duplicates_found:
+        print(f"Всего групп дубликатов: {count_of_groups}\nВсего лишних копий: {count_of_extra_copies}\n")
+
+    else:
         print("Одинаковые файлы не найдены")
 
 
@@ -92,7 +99,7 @@ def main():
         print("Путь не является папкой")
     else:   
         files_by_size = get_files_by_size(folder_path)
-        get_duplicates(files_by_size)
+        get_duplicates(files_by_size, folder_path)
 
 
 if __name__ == "__main__":
