@@ -5,19 +5,21 @@ def normalize_spaces(text):
     return text_normalized
 
 
-def input_task(tasks):
+def get_name():
     while True:
         task_name = input("Введите название задачи: ")
         if not task_name.strip():
             print("Введена пустая строка, введите название\n")
             continue
-        else:
-            task_info = {}
-            task_info["title"] = normalize_spaces(task_name)
-            task_info["done"] = False
-            tasks.append(task_info)
-            print()
-            return
+        return normalize_spaces(task_name)
+
+def input_task(tasks):
+    task_name = get_name()
+    task_info = {}
+    task_info["title"] = task_name
+    task_info["done"] = False
+    tasks.append(task_info)
+    print()
 
 
 def show_tasks(tasks):
@@ -57,12 +59,19 @@ def delete_task(tasks):
     tasks.pop(task_index)
     print("Выбранная задача удалена\n")
 
-        
+
+def edit_task(tasks):
+    task_index = select_number(tasks)
+    new_name = get_name()
+    tasks[task_index]["title"] = new_name
+    print("Название задачи изменено\n")
+
+
 tasks = []
 
 while True:
 
-    print("1. Добавить задачу\n2. Показать задачи\n3. Отметить задачу выполненной\n4. Удалить задачу\n0. Выход\n")
+    print("1. Добавить задачу\n2. Показать задачи\n3. Отметить задачу выполненной\n4. Удалить задачу\n5. Изменить название задачи\n0. Выход\n")
 
     try:
         command = int(input("Выберите команду: "))
@@ -70,7 +79,7 @@ while True:
         print("Неверное значение введите число\n")
         continue
 
-    if command > 4 or command < 0:
+    if command > 5 or command < 0:
         print("Такой команды нет\n")
         continue
 
@@ -97,6 +106,14 @@ while True:
     elif command == 4:
         show_tasks(tasks)
         delete_task(tasks)
+
+
+    elif command == 5 and not tasks:
+        print("Задачи не введены\n")
+    elif command == 5:
+        show_tasks(tasks)
+        edit_task(tasks)
+
 
     elif command == 0:
         break
