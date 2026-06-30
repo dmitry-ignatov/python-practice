@@ -1,3 +1,6 @@
+import json
+
+
 
 def normalize_spaces(text):
     words = text.split()
@@ -87,20 +90,38 @@ def show_statistics(tasks):
     print(f"Не выполнено: {task_counts[1]}\n")
 
 
+def save_tasks(tasks):
+    with open("tasks.json", "w", encoding="utf-8") as file:
+        json.dump(tasks, file, ensure_ascii=False, indent=4)
+    print("Задачи сохранены")
+
+
+def load_tasks():
+    try:
+        with open("tasks.json", "r", encoding="utf-8") as file:
+            tasks = json.load(file)
+            print("Задачи загружены")
+            return tasks
+    except FileNotFoundError:
+        print("Файл с задачами не найден")
+        return []
+
 
 tasks = []
 
 while True:
 
     print("1. Добавить задачу\n2. Показать задачи\n3. Отметить задачу выполненной")
-    print("4. Удалить задачу\n5. Изменить название задачи\n6. Показать статистику задач\n0. Выход\n")
+    print("4. Удалить задачу\n5. Изменить название задачи\n6. Показать статистику задач")
+    print("0. Выход\n7. Сохранить задачи\n8. Загрузить задачи\n")
+
     try:
         command = int(input("Выберите команду: "))
     except ValueError:
         print("Неверное значение введите число\n")
         continue
 
-    if command > 6 or command < 0:
+    if command > 8 or command < 0:
         print("Такой команды нет\n")
         continue
 
@@ -140,6 +161,14 @@ while True:
         print("Задачи не введены\n")
     elif command == 6:
         show_statistics(tasks)
+
+
+    elif command == 7:
+        save_tasks(tasks)
+
+
+    elif command == 8:       
+        tasks = load_tasks()
 
 
     elif command == 0:
