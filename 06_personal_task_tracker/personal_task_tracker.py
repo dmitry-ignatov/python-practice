@@ -96,24 +96,40 @@ def save_tasks(tasks):
     print("Задачи сохранены")
 
 
-def load_tasks():
+def load_tasks(show_message):
     try:
         with open("tasks.json", "r", encoding="utf-8") as file:
             tasks = json.load(file)
-            print("Задачи загружены")
+            if show_message:
+                print("Задачи загружены")
             return tasks
     except FileNotFoundError:
-        print("Файл с задачами не найден")
+        if show_message:
+            print("Файл с задачами не найден\n")
         return []
 
 
-tasks = []
+def ask_save_before_exit(tasks):
+    if tasks:
+        while True:
+            answer = input("Сохранить задачи перед выходом? y/n ")
+            answer_normalize = normalize_spaces(answer).lower()
+            if answer_normalize == "y":
+                save_tasks(tasks)
+                break
+            elif answer_normalize == "n":
+                break
+            else:
+                print("Введите y или n")
+
+
+tasks = load_tasks(False)
 
 while True:
 
     print("1. Добавить задачу\n2. Показать задачи\n3. Отметить задачу выполненной")
     print("4. Удалить задачу\n5. Изменить название задачи\n6. Показать статистику задач")
-    print("0. Выход\n7. Сохранить задачи\n8. Загрузить задачи\n")
+    print("7. Сохранить задачи\n8. Загрузить задачи\n0. Выход\n")
 
     try:
         command = int(input("Выберите команду: "))
@@ -167,9 +183,10 @@ while True:
         save_tasks(tasks)
 
 
-    elif command == 8:       
-        tasks = load_tasks()
+    elif command == 8:
+        tasks = load_tasks(True)
 
 
     elif command == 0:
+        ask_save_before_exit(tasks)
         break
