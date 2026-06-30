@@ -23,6 +23,7 @@ def input_task(tasks):
     task_info["title"] = task_name
     task_info["done"] = False
     tasks.append(task_info)
+    print("Задача добавлена")
     print()
 
 
@@ -93,7 +94,7 @@ def show_statistics(tasks):
 def save_tasks(tasks):
     with open("tasks.json", "w", encoding="utf-8") as file:
         json.dump(tasks, file, ensure_ascii=False, indent=4)
-    print("Задачи сохранены")
+    print("Задачи сохранены\n")
 
 
 def show_format_error(show_message):
