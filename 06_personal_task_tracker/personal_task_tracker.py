@@ -50,8 +50,8 @@ def select_number(tasks):
         else:
             index = task_number - 1
             return index
-    
-    
+
+
 def note_task(tasks):
     task_index = select_number(tasks)
     tasks[task_index]["done"] = True
@@ -96,31 +96,74 @@ def save_tasks(tasks):
     print("Задачи сохранены")
 
 
+def show_format_error(show_message):
+    if show_message:
+        print("Файл с задачами имеет неверный формат\n")
+
+
+def is_valid_tasks(tasks, show_message):
+
+    if not isinstance(tasks, list):
+        show_format_error(show_message)
+        return False
+    
+    for task in tasks:
+        if not isinstance(task, dict):
+            show_format_error(show_message)
+            return False
+
+        if set(task.keys()) != {"title", "done"}:
+            show_format_error(show_message)
+            return False
+
+        if not isinstance(task["title"], str):
+            show_format_error(show_message)
+            return False
+
+        if not task["title"].strip():
+            show_format_error(show_message)
+            return False
+
+        if not isinstance(task["done"], bool):
+            show_format_error(show_message)
+            return False
+
+    return True
+
+
 def load_tasks(show_message):
     try:
         with open("tasks.json", "r", encoding="utf-8") as file:
             tasks = json.load(file)
+
+            if not is_valid_tasks(tasks, show_message):
+                return []
+
             if show_message:
-                print("Задачи загружены")
+                print("Задачи загружены\n")
             return tasks
+
     except FileNotFoundError:
         if show_message:
             print("Файл с задачами не найден\n")
         return []
+    except json.JSONDecodeError:
+        if show_message:
+            print("Файл с задачами повреждён\n")
+        return []
 
 
 def ask_save_before_exit(tasks):
-    if tasks:
-        while True:
-            answer = input("Сохранить задачи перед выходом? y/n ")
-            answer_normalize = normalize_spaces(answer).lower()
-            if answer_normalize == "y":
-                save_tasks(tasks)
-                break
-            elif answer_normalize == "n":
-                break
-            else:
-                print("Введите y или n")
+    while True:
+        answer = input("Сохранить задачи перед выходом? y/n ")
+        answer_normalize = normalize_spaces(answer).lower()
+        if answer_normalize == "y":
+            save_tasks(tasks)
+            return
+        elif answer_normalize == "n":
+            return
+        else:
+            print("Введите y или n")
 
 
 tasks = load_tasks(False)
@@ -150,7 +193,7 @@ while True:
         print("Задачи не введены\n")
     elif command == 2:
         show_tasks(tasks)
-        
+
 
     elif command == 3 and not tasks:
         print("Задачи не введены\n")
