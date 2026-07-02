@@ -91,6 +91,29 @@ def update_note(connection):
                 continue
 
 
+def search_notes(connection):
+    while True:
+        search_text = input("Введите текст для поиска: ")
+        search_text_normalized = normalize_text(search_text)
+        if not search_text_normalized:
+            print("Введите текст\n")
+            continue
+        else:
+            break
+
+    search_pattern = f"%{search_text_normalized}%"
+    cursor = connection.execute("SELECT id, text FROM notes WHERE text LIKE ?", (search_pattern,))
+    notes = cursor.fetchall()
+    print()
+    if not notes:
+        print("Заметок не найдено\n")
+    else:
+        print("Найденные заметки: ")
+        for note_id, text in notes:
+            print(f"{note_id}. {text}")
+        print()
+    
+
 connection = sqlite3.connect("notes.db")
 connection.execute(""" 
                     CREATE TABLE IF NOT EXISTS notes (
@@ -102,7 +125,7 @@ connection.commit()
 
 while True:
 
-    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку\n0. Выход\n")
+    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку\n5. Найти заметку\n0. Выход\n")
 
     try:
         command = int(input("Введите команду: "))
@@ -111,7 +134,7 @@ while True:
         continue
 
 
-    if command > 4 or command < 0:
+    if command > 5 or command < 0:
         print("Такой команды нет\n")
 
 
@@ -129,6 +152,10 @@ while True:
 
     elif command == 4:
         update_note(connection)
+
+
+    elif command == 5:
+        search_notes(connection)
 
 
     elif command == 0:
