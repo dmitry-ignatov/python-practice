@@ -20,6 +20,22 @@ def connect_database():
     return connection
 
 
+def show_menu():
+    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку")
+    print("5. Найти заметку\n6. Показать статистику\n7. Очистить все заметки\n0. Выход\n")
+
+
+def get_command():
+    try:
+        command = int(input("Введите команду: "))
+        if command > 7 or command < 0:
+            print("Такой команды нет\n")
+            return
+        return command
+    except ValueError:
+        print("Введите номер команды\n")
+
+
 def insert_note(connection):
     note_text = input("Введите заметку: ")
     note_text_normalized = normalize_text(note_text)
@@ -40,8 +56,8 @@ def show_notes(connection):
         return True
     else:
         print("Текущие заметки: ")
-        for note_id, text, date in notes:
-            print(f"{note_id}. {text} (Дата заметки: {date})")
+        for note_id, text, created_at in notes:
+            print(f"{note_id}. {text} (Дата заметки: {created_at})")
         print()
         return False
 
@@ -121,16 +137,16 @@ def search_notes(connection):
     else:        
         found_notes = []    # Русский текст плохо ищется по регистру в SQLite, делаем фильтр через Python
         search_text_lower = search_text_normalized.lower()
-        for note_id, text, date in notes:
-            if search_text_lower in text.lower() or search_text_normalized in date:
-                found_notes.append((note_id, text, date))
+        for note_id, text, created_at in notes:
+            if search_text_lower in text.lower() or search_text_normalized in created_at:
+                found_notes.append((note_id, text, created_at))
         
         if not found_notes:
             print("Заметок не найдено\n")
         else:
             print("Найденные заметки: ")
-            for note_id, text, date in found_notes:
-                print(f"{note_id}. {text} (Дата заметки: {date})")
+            for note_id, text, created_at in found_notes:
+                print(f"{note_id}. {text} (Дата заметки: {created_at})")
             print()
     
 
@@ -159,52 +175,49 @@ def delete_all_notes(connection):
                 print("Введите y или n\n")
 
 
-connection = connect_database()
+def main():
+    connection = connect_database()
 
-while True:
+    while True:
 
-    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку")
-    print("5. Найти заметку\n6. Показать статистику\n7. Очистить все заметки\n0. Выход\n")
-
-    try:
-        command = int(input("Введите команду: "))
-    except ValueError:
-        print("Введите номер команды\n")
-        continue
+        show_menu()
+        command = get_command()
+        if command is None:
+            continue
 
 
-    if command > 7 or command < 0:
-        print("Такой команды нет\n")
+        elif command == 1:
+            insert_note(connection)
 
 
-    elif command == 1:
-        insert_note(connection)
+        elif command == 2:
+            show_notes(connection)
 
 
-    elif command == 2:
-        show_notes(connection)
+        elif command == 3:
+            delete_note(connection)
 
 
-    elif command == 3:
-        delete_note(connection)
+        elif command == 4:
+            update_note(connection)
 
 
-    elif command == 4:
-        update_note(connection)
+        elif command == 5:
+            search_notes(connection)
 
 
-    elif command == 5:
-        search_notes(connection)
+        elif command == 6:
+            show_statistics(connection)
 
 
-    elif command == 6:
-        show_statistics(connection)
+        elif command == 7:
+            delete_all_notes(connection)
 
 
-    elif command == 7:
-        delete_all_notes(connection)
+        elif command == 0:
+            connection.close()
+            break
 
 
-    elif command == 0:
-        connection.close()
-        break
+if __name__ == "__main__":
+    main()
