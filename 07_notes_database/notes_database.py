@@ -101,17 +101,25 @@ def search_notes(connection):
         else:
             break
 
-    search_pattern = f"%{search_text_normalized}%"
-    cursor = connection.execute("SELECT id, text FROM notes WHERE text LIKE ?", (search_pattern,))
+    cursor = connection.execute("SELECT id, text FROM notes")
     notes = cursor.fetchall()
     print()
     if not notes:
         print("Заметок не найдено\n")
-    else:
-        print("Найденные заметки: ")
-        for note_id, text in notes:
-            print(f"{note_id}. {text}")
-        print()
+    else:        
+        found_notes = []
+        search_text_lower = search_text_normalized.lower()
+        for note_id, text in notes:                                     # Русский текст плохо ищется по регистру в SQLite, делаем фильтр через Python
+            if search_text_lower in text.lower():
+                found_notes.append((note_id, text))
+        
+        if not found_notes:
+            print("Заметок не найдено\n")
+        else:
+            print("Найденные заметки: ")
+            for note_id, text in found_notes:
+                print(f"{note_id}. {text}")
+            print()
     
 
 connection = sqlite3.connect("notes.db")
