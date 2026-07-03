@@ -8,6 +8,18 @@ def normalize_text(text):
     return text_normalized
 
 
+def connect_database():
+    connection = sqlite3.connect("notes.db")
+    connection.execute(""" 
+                        CREATE TABLE IF NOT EXISTS notes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                        text TEXT, created_at TEXT
+                        ) 
+                        """)
+    connection.commit()
+    return connection
+
+
 def insert_note(connection):
     note_text = input("Введите заметку: ")
     note_text_normalized = normalize_text(note_text)
@@ -15,21 +27,21 @@ def insert_note(connection):
     if not note_text_normalized:
         print("Введена пустая строка\n")
     else:
-        connection.execute("INSERT INTO notes (text) VALUES (?)", (note_text_normalized,))
+        connection.execute("INSERT INTO notes (text, created_at) VALUES (?, datetime('now', 'localtime'))", (note_text_normalized,))
         connection.commit()
         print("Заметка добавлена\n")
 
 
 def show_notes(connection):
-    cursor = connection.execute("SELECT id, text FROM notes ORDER BY id ASC")
+    cursor = connection.execute("SELECT id, text, created_at FROM notes ORDER BY id ASC")
     notes = cursor.fetchall()
     if not notes:
         print("Заметок пока нет\n")
         return True
     else:
         print("Текущие заметки: ")
-        for note_id, text in notes:
-            print(f"{note_id}. {text}")
+        for note_id, text, date in notes:
+            print(f"{note_id}. {text} (Дата заметки: {date})")
         print()
         return False
 
@@ -101,7 +113,7 @@ def search_notes(connection):
         else:
             break
 
-    cursor = connection.execute("SELECT id, text FROM notes ORDER BY id ASC")
+    cursor = connection.execute("SELECT id, text, created_at FROM notes ORDER BY id ASC")
     notes = cursor.fetchall()
     print()
     if not notes:
@@ -109,16 +121,16 @@ def search_notes(connection):
     else:        
         found_notes = []    # Русский текст плохо ищется по регистру в SQLite, делаем фильтр через Python
         search_text_lower = search_text_normalized.lower()
-        for note_id, text in notes:
-            if search_text_lower in text.lower():
-                found_notes.append((note_id, text))
+        for note_id, text, date in notes:
+            if search_text_lower in text.lower() or search_text_normalized in date:
+                found_notes.append((note_id, text, date))
         
         if not found_notes:
             print("Заметок не найдено\n")
         else:
             print("Найденные заметки: ")
-            for note_id, text in found_notes:
-                print(f"{note_id}. {text}")
+            for note_id, text, date in found_notes:
+                print(f"{note_id}. {text} (Дата заметки: {date})")
             print()
     
 
@@ -141,20 +153,13 @@ def delete_all_notes(connection):
                 print("Все заметки удалены\n")
                 return
             elif answer_normalized.lower() == "n":
-                print("Очистка оменена\n")
+                print("Очистка отменена\n")
                 return
             else:
                 print("Введите y или n\n")
 
 
-connection = sqlite3.connect("notes.db")
-connection.execute(""" 
-                    CREATE TABLE IF NOT EXISTS notes (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                    text TEXT
-                    ) 
-                    """)
-connection.commit()
+connection = connect_database()
 
 while True:
 
