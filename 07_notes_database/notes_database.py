@@ -128,6 +128,25 @@ def show_statistics(connection):
     print(f"Всего заметок: {result[0]}\n")
 
 
+def delete_all_notes(connection):
+    empty_notes = show_notes(connection)
+
+    if not empty_notes:
+        while True:
+            answer = input("Вы действительно хотите удалить все заметки? y/n: ")
+            answer_normalized = normalize_text(answer)
+            if answer_normalized.lower() == "y":
+                connection.execute("DELETE FROM notes")
+                connection.commit()
+                print("Все заметки удалены\n")
+                return
+            elif answer_normalized.lower() == "n":
+                print("Очистка оменена\n")
+                return
+            else:
+                print("Введите y или n\n")
+
+
 connection = sqlite3.connect("notes.db")
 connection.execute(""" 
                     CREATE TABLE IF NOT EXISTS notes (
@@ -139,7 +158,8 @@ connection.commit()
 
 while True:
 
-    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку\n5. Найти заметку\n6. Показать статистику\n0. Выход\n")
+    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку")
+    print("5. Найти заметку\n6. Показать статистику\n7. Очистить все заметки\n0. Выход\n")
 
     try:
         command = int(input("Введите команду: "))
@@ -148,7 +168,7 @@ while True:
         continue
 
 
-    if command > 6 or command < 0:
+    if command > 7 or command < 0:
         print("Такой команды нет\n")
 
 
@@ -174,6 +194,10 @@ while True:
 
     elif command == 6:
         show_statistics(connection)
+
+
+    elif command == 7:
+        delete_all_notes(connection)
 
 
     elif command == 0:
