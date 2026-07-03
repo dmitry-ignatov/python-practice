@@ -21,7 +21,7 @@ def insert_note(connection):
 
 
 def show_notes(connection):
-    cursor = connection.execute("SELECT id, text FROM notes")
+    cursor = connection.execute("SELECT id, text FROM notes ORDER BY id ASC")
     notes = cursor.fetchall()
     if not notes:
         print("Заметок пока нет\n")
@@ -101,15 +101,15 @@ def search_notes(connection):
         else:
             break
 
-    cursor = connection.execute("SELECT id, text FROM notes")
+    cursor = connection.execute("SELECT id, text FROM notes ORDER BY id ASC")
     notes = cursor.fetchall()
     print()
     if not notes:
         print("Заметок не найдено\n")
     else:        
-        found_notes = []
+        found_notes = []    # Русский текст плохо ищется по регистру в SQLite, делаем фильтр через Python
         search_text_lower = search_text_normalized.lower()
-        for note_id, text in notes:                                     # Русский текст плохо ищется по регистру в SQLite, делаем фильтр через Python
+        for note_id, text in notes:
             if search_text_lower in text.lower():
                 found_notes.append((note_id, text))
         
@@ -122,6 +122,12 @@ def search_notes(connection):
             print()
     
 
+def show_statistics(connection):
+    cursor = connection.execute("SELECT COUNT(*) FROM notes")
+    result = cursor.fetchone()
+    print(f"Всего заметок: {result[0]}\n")
+
+
 connection = sqlite3.connect("notes.db")
 connection.execute(""" 
                     CREATE TABLE IF NOT EXISTS notes (
@@ -133,7 +139,7 @@ connection.commit()
 
 while True:
 
-    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку\n5. Найти заметку\n0. Выход\n")
+    print("1. Добавить заметку\n2. Показать заметки\n3. Удалить заметку\n4. Изменить заметку\n5. Найти заметку\n6. Показать статистику\n0. Выход\n")
 
     try:
         command = int(input("Введите команду: "))
@@ -142,7 +148,7 @@ while True:
         continue
 
 
-    if command > 5 or command < 0:
+    if command > 6 or command < 0:
         print("Такой команды нет\n")
 
 
@@ -164,6 +170,10 @@ while True:
 
     elif command == 5:
         search_notes(connection)
+
+
+    elif command == 6:
+        show_statistics(connection)
 
 
     elif command == 0:
