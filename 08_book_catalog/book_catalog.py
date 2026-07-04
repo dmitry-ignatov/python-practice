@@ -24,6 +24,27 @@ def show_menu():
 4. Найти книгу\n5. Изменить статус книги\n6. Показать статистику\n7. Очистить каталог\n0. Выход\n""")
 
 
+def get_book_status():
+    while True:
+        try:
+            book_status_number = int(input("Выберите номер статуса (1 - Запланировано, 2 - Читаю, 3 - Прочтено): "))
+            if book_status_number == 1:
+                book_status = "Запланировано"
+                return book_status
+            elif book_status_number == 2:
+                book_status = "Читаю"
+                return book_status
+            elif book_status_number == 3:
+                book_status = "Прочтено"
+                return book_status
+            else:
+                print("Введите нужный номер статуса\n")
+                continue
+        except ValueError:
+            print("Введите нужный номер статуса\n")
+            continue
+
+
 def insert_book(connection):
     while True:
         book_name = input("Введите название книги: ")
@@ -41,37 +62,23 @@ def insert_book(connection):
             continue
         else:
             break
-    while True:
-        try:
-            book_status_number = int(input("Выберите номер статуса (1 - Запланировано, 2 - Читаю, 3 - Прочтено): "))
-            if book_status_number == 1:
-                book_status = "Запланировано"
-                break
-            elif book_status_number == 2:
-                book_status = "Читаю"
-                break
-            elif book_status_number == 3:
-                book_status = "Прочтено"
-                break
-            else:
-                print("Введите нужный номер статуса\n")
-                continue
-        except ValueError:
-            print("Введите нужный номер статуса\n")
-            continue
+
+    book_status = get_book_status()
 
     connection.execute("INSERT INTO books (title, author, status) VALUES (?, ?, ?)",(book_name_normalized, author_name_normalized, book_status))
     connection.commit()
     print("Книга добавлена\n")
 
 
-def show_books(connection):
+def show_books(connection, search_check):
     cursor = connection.execute("SELECT id, title, author, status FROM books ORDER BY id ASC")
     books = cursor.fetchall()
     if not books:
         print("Книг в каталоге нет\n")
         return
     else:
+        if search_check:
+            return True
         print("Книги в каталоге:")
         for id, title, author, status in books:
             print(f"{id}. {title}, Автор: {author}, Статус: {status}")
@@ -82,10 +89,13 @@ def show_books(connection):
 def get_book_id(connection, prompt):
     while True:
         try:
-            book_number = int(input(f"Введите номер книги для {prompt}: "))
-            if book_number <= 0:
+            book_number = int(input(f"Введите номер книги для {prompt} (0 - Вернуться назад): "))
+            if book_number < 0:
                 print("Неверный номер книги\n")
                 continue
+            elif book_number == 0:
+                print()
+                return
             cursor = connection.execute("SELECT id FROM books WHERE id = ?", (book_number,))
             book_id = cursor.fetchone()
             if not book_id:
@@ -98,12 +108,15 @@ def get_book_id(connection, prompt):
 
 
 def delete_book(connection):
+    search_check = False
+    empty_catalog = show_books(connection, search_check)
     while True:
-        empty_catalog = show_books(connection)
         if empty_catalog is None:
             break
         else:
             book_number = get_book_id(connection, "удаления")
+            if book_number is None:
+                return
             connection.execute("DELETE FROM books WHERE id = ?", (book_number,))
             connection.commit()
             print("Книга удалена\n")
@@ -111,8 +124,15 @@ def delete_book(connection):
 
 
 def search_book(connection):
+    search_check = True     #Добавляю проверку чтобы при поиске не выводился список книг лишний раз
+    empty_catalog = show_books(connection, search_check)
     while True:
-        search_text = input("Введите название книги, имя автора или статус: ")
+        if empty_catalog is None:
+            return
+        search_text = input("Введите название книги, имя автора или статус (0 - Вернуться назад): ")
+        if search_text == "0":
+            print()
+            return
         search_text_normalized = normalize_text(search_text)
         if not search_text_normalized:
             print("Введите текст\n")
@@ -138,6 +158,20 @@ def search_book(connection):
             print()
 
 
+def change_book_status(connection):
+    search_check = False
+    empty_catalog = show_books(connection, search_check)
+    if empty_catalog is None:
+        return
+    book_number = get_book_id(connection, "изменения")
+    if book_number is None:
+        return
+    book_status = get_book_status()
+    connection.execute("UPDATE books SET status = ? WHERE id = ?", (book_status, book_number))
+    connection.commit()
+    print(f"Статус книги изменен на '{book_status}'\n")
+
+
 
 connection = create_table()
 
@@ -159,7 +193,8 @@ while True:
     
 
     elif command == 2:
-        show_books(connection)
+        search_check = False
+        show_books(connection, search_check)
 
 
     elif command == 3:
@@ -168,6 +203,10 @@ while True:
 
     elif command == 4:
         search_book(connection)
+
+
+    elif command == 5:
+        change_book_status(connection)
 
 
     elif command == 0:
