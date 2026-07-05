@@ -58,7 +58,7 @@ def insert_book(connection):
         book_name = input("Введите название книги: ")
         book_name_normalized = normalize_text(book_name)
         if not book_name_normalized:
-            print("Введиет название\n")
+            print("Введите название\n")
             continue
         else:
             break
@@ -66,14 +66,14 @@ def insert_book(connection):
         author_name = input("Введите имя автора: ")
         author_name_normalized = normalize_text(author_name)
         if not author_name_normalized:
-            print("Введиет имя\n")
+            print("Введите имя\n")
             continue
         else:
             break
 
     book_status = get_book_status()
 
-    connection.execute("INSERT INTO books (title, author, status) VALUES (?, ?, ?)",(book_name_normalized, author_name_normalized, book_status))
+    connection.execute("INSERT INTO books (title, author, status) VALUES (?, ?, ?)", (book_name_normalized, author_name_normalized, book_status))
     connection.commit()
     print("Книга добавлена\n")
 
@@ -107,7 +107,7 @@ def get_book_id(connection, prompt):
             cursor = connection.execute("SELECT id FROM books WHERE id = ?", (book_number,))
             book_id = cursor.fetchone()
             if not book_id:
-                print("Книги с таким номер нет в каталоге\n")
+                print("Книги с таким номером нет в каталоге\n")
                 continue
             return book_number
         except ValueError:
@@ -118,21 +118,20 @@ def get_book_id(connection, prompt):
 def delete_book(connection):
     search_check = False
     empty_catalog = show_books(connection, search_check)
-    while True:
-        if empty_catalog is None:
-            break
-        else:
-            book_number = get_book_id(connection, "удаления")
-            if book_number is None:
-                return
-            connection.execute("DELETE FROM books WHERE id = ?", (book_number,))
-            connection.commit()
-            print("Книга удалена\n")
-            break
+    if empty_catalog is None:
+        return
+    else:
+        book_number = get_book_id(connection, "удаления")
+        if book_number is None:
+            return
+        connection.execute("DELETE FROM books WHERE id = ?", (book_number,))
+        connection.commit()
+        print("Книга удалена\n")
+        return
 
 
 def search_book(connection):
-    search_check = True     #Добавляю проверку чтобы при поиске не выводился список книг лишний раз
+    search_check = True     # Добавляю проверку чтобы при поиске не выводился список книг лишний раз
     empty_catalog = show_books(connection, search_check)
     while True:
         if empty_catalog is None:
@@ -149,21 +148,18 @@ def search_book(connection):
             break
     cursor = connection.execute("SELECT id, title, author, status FROM books ORDER BY id ASC")
     books = cursor.fetchall()
-    if not books:
-        print("Книг не найдено\n")
+    found_books = []
+    search_text_normalized_lower = search_text_normalized.lower()
+    for id, title, author, status in books:
+        if search_text_normalized_lower in title.lower() or search_text_normalized_lower in author.lower() or search_text_normalized_lower in status.lower():
+            found_books.append((id, title, author, status))
+    if not found_books:
+        print("Книги не найдены\n")
     else:
-        found_books = []
-        search_text_normalized_lower = search_text_normalized.lower()
-        for id, title, author, status in books:
-            if search_text_normalized_lower in title.lower() or search_text_normalized_lower in author.lower() or search_text_normalized_lower in status.lower():
-                found_books.append((id, title, author, status))
-        if not found_books:
-            print("Книги не найдены\n")
-        else:
-            print("Найденные книги:")
-            for id, title, author, status in found_books:
-                print(f"{id}. {title}, Автор: {author}, Статус: {status}")
-            print()
+        print("Найденные книги:")
+        for id, title, author, status in found_books:
+            print(f"{id}. {title}, Автор: {author}, Статус: {status}")
+        print()
 
 
 def change_book_status(connection):
