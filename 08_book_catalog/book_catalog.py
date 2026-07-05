@@ -24,6 +24,14 @@ def show_menu():
 4. Найти книгу\n5. Изменить статус книги\n6. Показать статистику\n7. Очистить каталог\n0. Выход\n""")
 
 
+def get_command():
+    try:
+        command = int(input("Введите команду: "))
+        return command
+    except ValueError:
+        print("Введите число\n")
+        return
+
 def get_book_status():
     while True:
         try:
@@ -172,43 +180,94 @@ def change_book_status(connection):
     print(f"Статус книги изменен на '{book_status}'\n")
 
 
-
-connection = create_table()
-
-while True:
-    show_menu()
-
-    try:
-        command = int(input("Введите команду: "))
-    except ValueError:
-        print("Введите число\n")
-        continue
-
-    if command > 7 or command < 0:
-        print("Неверный номер команды\n")
-
-
-    elif command == 1:
-        insert_book(connection)
-    
-
-    elif command == 2:
-        search_check = False
-        show_books(connection, search_check)
+def show_statistics(connection):
+    cursor = connection.execute("SELECT id, title, author, status FROM books")
+    books = cursor.fetchall()
+    if not books:
+        print("Книг в каталоге нет\n")
+        return
+    planned_count = 0
+    reading_count = 0
+    finished_count = 0
+    for _, _, _, status in books:
+        if status == "Запланировано":
+            planned_count += 1
+        elif status == "Читаю":
+            reading_count += 1
+        elif status == "Прочтено":
+            finished_count += 1
+    print(f"Всего книг: {len(books)}")
+    print(f"Книг со статусом 'Запланировано': {planned_count}")
+    print(f"Книг со статусом 'Читаю': {reading_count}")
+    print(f"Книг со статусом 'Прочтено': {finished_count}\n")
 
 
-    elif command == 3:
-        delete_book(connection)
+def delete_all_books(connection):
+    while True:
+        answer = input("Вы действительно хотите очистить весь каталог? y/n: ")
+        answer_normalized_lower = normalize_text(answer).lower()
+        if answer_normalized_lower == "y":
+            connection.execute("DELETE FROM books")
+            connection.commit()
+            print("Все книги удалены\n")
+            return
+        elif answer_normalized_lower == "n":
+            print("Действие отменено\n")
+            return
+        else:
+            print("Введите y или n\n")
+            continue
 
 
-    elif command == 4:
-        search_book(connection)
+def main():
+    connection = create_table()
+
+    while True:
+        show_menu()
+
+        command = get_command()
+        if command is None:
+            continue
 
 
-    elif command == 5:
-        change_book_status(connection)
+        elif command > 7 or command < 0:
+            print("Неверный номер команды\n")
 
 
-    elif command == 0:
-        connection.close()
-        break
+        elif command == 1:
+            insert_book(connection)
+        
+
+        elif command == 2:
+            search_check = False
+            show_books(connection, search_check)
+
+
+        elif command == 3:
+            delete_book(connection)
+
+
+        elif command == 4:
+            search_book(connection)
+
+
+        elif command == 5:
+            change_book_status(connection)
+
+
+        elif command == 6:
+            show_statistics(connection)
+
+
+        elif command == 7:
+            delete_all_books(connection)
+
+
+        elif command == 0:
+            connection.close()
+            break
+
+
+
+if __name__ == "__main__":
+    main()
