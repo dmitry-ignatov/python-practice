@@ -16,7 +16,7 @@ def get_password_len(password):
         return [len_password, score]
 
 
-def small_or_big_letter(password):
+def check_letters_size(password):
     big_letter = "нет"
     small_letter = "нет"
     score = 0
@@ -68,14 +68,14 @@ def is_simple_password(password):
 
 def get_score_sum(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password):
     
-    score_sum = int(letters_len[1] + letters_size[2] + letters_digit[1] + letters_spec[1] + letters_space[1] + simple_password[1])
+    score_sum = letters_len[1] + letters_size[2] + letters_digit[1] + letters_spec[1] + letters_space[1] + simple_password[1]
     if score_sum <= 3:
         assess = "слабый пароль"
     elif score_sum >= 4 and score_sum <= 6:
         assess = "средний пароль"
     elif score_sum >= 7 and score_sum <= 10:
         assess = "сильный пароль"
-    return assess
+    return [assess, score_sum]
 
 
 def recommendations(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password):
@@ -102,18 +102,9 @@ def recommendations(letters_len, letters_size, letters_digit, letters_spec, lett
     if simple_password[0] == "да":
         print("- Избегайте простых паролей")
 
-    
-password = input("Введите пароль: ")
-letters_len = get_password_len(password)
-letters_size = small_or_big_letter(password)  
-letters_digit = is_there_digit(password)
-letters_spec = is_spec_letter(password)
-letters_space = is_there_spaces(password)
-simple_password = is_simple_password(password)
-assess = get_score_sum(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password)
 
-
-print(f"""Результат проверки:
+def get_results(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password, assess):
+    print(f"""Результат проверки:
 Длина: {letters_len[0]}
 Большие буквы: {letters_size[0]}
 Маленькие буквы: {letters_size[1]}
@@ -122,7 +113,25 @@ print(f"""Результат проверки:
 Пробелы: {letters_space[0]}
 Простой пароль: {simple_password[0]}""")
 
-print(f"\nОценка: {assess}\n")
+    print(f"\nОценка: {assess[0]}\n")
 
-print("Рекомендации:")
-recommendations(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password)
+    if assess[1] != 10:
+        print("Рекомендации:")
+        recommendations(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password)
+
+
+def main():
+
+    password = input("Введите пароль: ")
+    letters_len = get_password_len(password)
+    letters_size = check_letters_size(password)  
+    letters_digit = is_there_digit(password)
+    letters_spec = is_spec_letter(password)
+    letters_space = is_there_spaces(password)
+    simple_password = is_simple_password(password)
+    assess = get_score_sum(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password)
+    get_results(letters_len, letters_size, letters_digit, letters_spec, letters_space, simple_password, assess)
+
+
+if __name__ == "__main__":
+    main()
