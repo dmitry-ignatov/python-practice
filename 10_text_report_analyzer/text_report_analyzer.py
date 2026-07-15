@@ -3,6 +3,16 @@ BASE_DIR = Path(__file__).parent
 file_path = BASE_DIR / "input.txt"
 
 
+def get_normalized_words(words):
+    normalized_words = []
+    for word in words:
+        normalized_word = word.lower().strip(".,!?;:()[]\"«»")
+        if not normalized_word:
+            continue
+        normalized_words.append(normalized_word)
+    return normalized_words
+
+
 def get_longest_smallest_word(words):
     longest_word = words[0]
     for word in words:
@@ -26,6 +36,7 @@ def line_count(file):
 def get_top3_words(words):
     duplicate_words = {}
     word_counts = {}
+    top_words = {}
     for word in words:
         if word in word_counts:
             word_counts[word] += 1
@@ -42,16 +53,15 @@ def get_top3_words(words):
 
         top1_word = keys[0]
         top1_word_count = values[0]
-        top2_word = None
-        top3_word = None
         for word, count in zip(keys, values):
             if count > top1_word_count:
                 top1_word_count = count
                 top1_word = word
         keys.remove(top1_word)
         values.remove(top1_word_count)
+        top_words[top1_word] = top1_word_count
 
-        if len(duplicate_words.keys()) >= 2:
+        if len(duplicate_words) >= 2:
             top2_word = keys[0]
             top2_word_count = values[0]
             for word, count in zip(keys, values):
@@ -60,38 +70,44 @@ def get_top3_words(words):
                     top2_word = word
             keys.remove(top2_word)
             values.remove(top2_word_count)
+            top_words[top2_word] = top2_word_count
 
-        if len(duplicate_words.keys()) >= 3:
+        if len(duplicate_words) >= 3:
             top3_word = keys[0]
             top3_word_count = values[0]
             for word, count in zip(keys, values):
                 if count > top3_word_count:
                     top3_word_count = count
                     top3_word = word
+            top_words[top3_word] = top3_word_count
 
-        return top1_word, top2_word, top3_word, word_counts
-    return None, None, None, word_counts
+        return top_words, word_counts
+    return None, word_counts
     
     
 def get_unique_words_count(result):
-    unique_words_count = len(result[3])
+    unique_words_count = len(result[1])
     return unique_words_count
 
 
 def show_report(text, words, long_small_word, count, top, unique_words_count):
     print(f"Количество символов: {len(text)}")
     print(f"Количество слов: {len(words)}")
-    print(f"Количество символов без пробелов: {len(''.join(words))}")
+    print(f"Количество символов без пробелов: {len(''.join(text.split()))}")
     print(f"Самое длинное слово: {long_small_word[0]}")
     print(f"Самое короткое слово: {long_small_word[1]}")
     print(f"Количество строк: {count}")
     if top[0] is not None:
-        if top[1] is None:
-            print(f"топ-1 самое частое слово: {top[0]}")
-        elif top[2] is None:
-            print(f"топ-2 самых частых слов: Топ 1: {top[0]}, Топ 2: {top[1]}")
+        top_items = list(top[0].items())
+        if len(top_items) == 1:
+            print(f"топ-1 самое частое слово: {top_items[0][0]}, количество слов: {top_items[0][1]}")
+        elif len(top_items) == 2:
+            print(f"топ-2 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
+                                           f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}")
         else:
-            print(f"топ-3 самых частых слов: Топ 1: {top[0]}, Топ 2: {top[1]}, Топ 3: {top[2]}")
+            print(f"топ-3 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
+                                           f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}, "
+                                           f"Топ 3: {top_items[2][0]}, количество слов: {top_items[2][1]}")
     else:
         print("Количество повторов: 0")
     print(f"Количество уникальных слов: {unique_words_count}")
@@ -102,14 +118,15 @@ try:
         text = file.read()
         file.seek(0)
         words = text.split()
-        if not words:
+        normalized_words = get_normalized_words(words)
+        if not normalized_words:
             print("В файле нет текста")
         else:
-            long_small_word = get_longest_smallest_word(words)
+            long_small_word = get_longest_smallest_word(normalized_words)
             count = line_count(file)
-            top = get_top3_words(words)
+            top = get_top3_words(normalized_words)
             unique_words_count = get_unique_words_count(top)
-            show_report(text, words, long_small_word, count, top, unique_words_count)
+            show_report(text, normalized_words, long_small_word, count, top, unique_words_count)
 
 except FileNotFoundError:
     print("Файл не найден")
