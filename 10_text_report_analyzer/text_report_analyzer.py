@@ -1,6 +1,7 @@
 from pathlib import Path
 BASE_DIR = Path(__file__).parent
 file_path = BASE_DIR / "input.txt"
+report_path = BASE_DIR / "report.txt"
 
 
 def get_normalized_words(words):
@@ -90,27 +91,37 @@ def get_unique_words_count(result):
     return unique_words_count
 
 
-def show_report(text, words, long_small_word, count, top, unique_words_count):
-    print(f"Количество символов: {len(text)}")
-    print(f"Количество слов: {len(words)}")
-    print(f"Количество символов без пробелов: {len(''.join(text.split()))}")
-    print(f"Самое длинное слово: {long_small_word[0]}")
-    print(f"Самое короткое слово: {long_small_word[1]}")
-    print(f"Количество строк: {count}")
+def get_report(text, normalized_words, long_small_word, count, top, unique_words_count):
+    report = [f"Количество символов: {len(text)}",
+    f"Количество слов: {len(normalized_words)}",
+    f"Количество символов без пробелов: {len(''.join(text.split()))}",
+    f"Самое длинное слово: {long_small_word[0]}",
+    f"Самое короткое слово: {long_small_word[1]}",
+    f"Количество строк: {count}"]
     if top[0] is not None:
         top_items = list(top[0].items())
         if len(top_items) == 1:
-            print(f"топ-1 самое частое слово: {top_items[0][0]}, количество слов: {top_items[0][1]}")
+            report.append(f"топ-1 самое частое слово: {top_items[0][0]}, количество слов: {top_items[0][1]}")
         elif len(top_items) == 2:
-            print(f"топ-2 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
-                                           f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}")
+            report.append(f"топ-2 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
+                                                   f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}")
         else:
-            print(f"топ-3 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
-                                           f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}, "
-                                           f"Топ 3: {top_items[2][0]}, количество слов: {top_items[2][1]}")
+            report.append(f"топ-3 самых частых слов: Топ 1: {top_items[0][0]}, количество слов: {top_items[0][1]}, "
+                                                   f"Топ 2: {top_items[1][0]}, количество слов: {top_items[1][1]}, "
+                                                   f"Топ 3: {top_items[2][0]}, количество слов: {top_items[2][1]}")
     else:
-        print("Количество повторов: 0")
-    print(f"Количество уникальных слов: {unique_words_count}")
+        report.append("Количество повторов: 0")
+    report.append(f"Количество уникальных слов: {unique_words_count}")
+    return report
+
+    
+def show_report(report):
+    print("\n".join(report))
+
+
+def save_report(report, report_path):
+    with open(report_path, "w", encoding="utf-8") as file:
+        file.write("\n".join(report))
 
 
 try:
@@ -126,7 +137,9 @@ try:
             count = line_count(file)
             top = get_top3_words(normalized_words)
             unique_words_count = get_unique_words_count(top)
-            show_report(text, normalized_words, long_small_word, count, top, unique_words_count)
+            report = get_report(text, normalized_words, long_small_word, count, top, unique_words_count)
+            show_report(report)
+            save_report(report, report_path)
 
 except FileNotFoundError:
     print("Файл не найден")
