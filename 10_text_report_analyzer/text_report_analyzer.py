@@ -1,7 +1,22 @@
 from pathlib import Path
-BASE_DIR = Path(__file__).parent
-file_path = BASE_DIR / "input.txt"
-report_path = BASE_DIR / "report.txt"
+
+
+
+def input_path():
+    while True:
+        path = input("Введите путь к файлу: ")
+        normalized_path = path.strip()
+        text_path = Path(normalized_path)
+        if not normalized_path:
+            print("Введите путь")
+        elif not text_path.exists():
+            print("Такого пути нет")
+        elif not text_path.is_file():
+            print("Путь ведет не к файлу")
+        elif text_path.suffix.lower() != ".txt":
+            print("Не тот формат файла")
+        else:
+            return text_path
 
 
 def get_normalized_words(words):
@@ -119,27 +134,38 @@ def show_report(report):
     print("\n".join(report))
 
 
-def save_report(report, report_path):
+def save_report(report, text_path):
+    report_path = text_path.parent / f"{text_path.stem}_report{text_path.suffix}"
     with open(report_path, "w", encoding="utf-8") as file:
         file.write("\n".join(report))
+    print(f"Отчет сохранен в {report_path}")
 
 
-try:
-    with open(file_path, "r", encoding="utf-8") as file:
+def read_file(text_path):
+    with open(text_path, "r", encoding="utf-8") as file:
         text = file.read()
         file.seek(0)
         words = text.split()
         normalized_words = get_normalized_words(words)
         if not normalized_words:
             print("В файле нет текста")
+            return None, None, None
         else:
-            long_small_word = get_longest_smallest_word(normalized_words)
             count = line_count(file)
-            top = get_top3_words(normalized_words)
-            unique_words_count = get_unique_words_count(top)
-            report = get_report(text, normalized_words, long_small_word, count, top, unique_words_count)
-            show_report(report)
-            save_report(report, report_path)
+            return count, text, normalized_words
 
-except FileNotFoundError:
-    print("Файл не найден")
+
+while True:
+    text_path = input_path()
+    count, text, normalized_words = read_file(text_path)
+    if count is None and text is None and normalized_words is None:
+        continue
+    long_small_word = get_longest_smallest_word(normalized_words)
+    top = get_top3_words(normalized_words)
+    unique_words_count = get_unique_words_count(top)
+    report = get_report(text, normalized_words, long_small_word, count, top, unique_words_count)
+    show_report(report)
+    save_report(report, text_path)
+    break
+
+
