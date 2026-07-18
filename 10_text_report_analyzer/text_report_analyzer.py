@@ -169,17 +169,20 @@ def read_file(text_path):
         return None, None, None
 
 
-while True:
-    text_path = input_path()
-    count, text, normalized_words = read_file(text_path)
-    if count is None and text is None and normalized_words is None:
-        continue
-    long_small_word = get_longest_smallest_word(normalized_words)
-    top = get_top3_words(normalized_words)
-    unique_words_count = get_unique_words_count(top)
-    report = get_report(text, normalized_words, long_small_word, count, top, unique_words_count)
-    show_report(report)
-    save_report(report, text_path)
-    break
+def main():
+    while True:
+        text_path = input_path()
+        count, text, normalized_words = read_file(text_path)
+        if count is None and text is None and normalized_words is None:
+            continue
+        long_small_word = get_longest_smallest_word(normalized_words)
+        top = get_top3_words(normalized_words)
+        unique_words_count = get_unique_words_count(top)
+        report = get_report(text, normalized_words, long_small_word, count, top, unique_words_count)
+        show_report(report)
+        save_report(report, text_path)
+        break
 
 
+if __name__ == "__main__":
+    main()
