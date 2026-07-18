@@ -135,24 +135,38 @@ def show_report(report):
 
 
 def save_report(report, text_path):
-    report_path = text_path.parent / f"{text_path.stem}_report{text_path.suffix}"
-    with open(report_path, "w", encoding="utf-8") as file:
-        file.write("\n".join(report))
-    print(f"Отчет сохранен в {report_path}")
+    try:
+        report_path = text_path.parent / f"{text_path.stem}_report{text_path.suffix}"
+        with open(report_path, "w", encoding="utf-8") as file:
+            file.write("\n".join(report))
+        print(f"Отчет сохранен в {report_path}")
+    except PermissionError:
+        print("Нет доступа к записи отчета")
+    except OSError:
+        print("Не удалось сохранить отчет")
 
 
 def read_file(text_path):
-    with open(text_path, "r", encoding="utf-8") as file:
-        text = file.read()
-        file.seek(0)
-        words = text.split()
-        normalized_words = get_normalized_words(words)
-        if not normalized_words:
-            print("В файле нет текста")
-            return None, None, None
-        else:
+    try:
+        with open(text_path, "r", encoding="utf-8") as file:
+            text = file.read()
+            file.seek(0)
+            words = text.split()
+            normalized_words = get_normalized_words(words)
+            if not normalized_words:
+                print("В файле нет текста")
+                return None, None, None
             count = line_count(file)
             return count, text, normalized_words
+    except UnicodeDecodeError:
+        print("Файл не удалось прочитать в кодировке UTF-8")
+        return None, None, None
+    except PermissionError:
+        print("Нет доступа к чтению файла")
+        return None, None, None
+    except OSError:
+        print("Не удалось прочитать файл")
+        return None, None, None
 
 
 while True:
