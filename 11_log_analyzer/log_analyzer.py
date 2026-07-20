@@ -20,13 +20,31 @@ def get_path():
             return path
         
 
+def parse_log_line(line):
+    
+    parts = line.strip().split(" | ", 2)
+    if len(parts) < 3:
+        return None
+    line_dict = {
+        "datetime": parts[0],
+        "level": parts[1],
+        "message": parts[2]
+    }
+    return line_dict
+
+
 def read_file(path):
     try:
         with open(path, "r", encoding= "utf-8") as file:
-            count = 0
+            log_entries = []
+            corrupted_count = 0
             for line in file:
-                count += 1
-        return count
+                line_dict = parse_log_line(line)
+                if line_dict is None:
+                    corrupted_count += 1
+                else:
+                    log_entries.append(line_dict)
+        return log_entries, corrupted_count
     except UnicodeDecodeError:
         print("Файл не удалось прочитать в нужной кодировке")
     except PermissionError:
@@ -35,11 +53,16 @@ def read_file(path):
         print("Не удалось прочитать файл")
 
 
-def show_line_count(count):
-    print(f"Количество прочитанных строк: {count}")
+def show_entries(log_entries, corrupted_count):
+    for line in log_entries:
+        print(line)
+    print(f"Количество корректных строк: {len(log_entries)}")
+    print(f"Количество поврежденных строк: {corrupted_count}")
+
 
 
 path = get_path()
-count = read_file(path)
-if count is not None:
-    show_line_count(count)
+result = read_file(path)
+if result is not None:
+    log_entries, corrupted_count = result
+    show_entries(log_entries, corrupted_count)
