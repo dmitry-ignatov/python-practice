@@ -19,6 +19,20 @@ def get_path():
         else:
             return path
         
+def input_level():
+    allowed_levels = ("ERROR", "WARNING", "INFO", "DEBUG")
+    while True:
+        level = input("Введите нужный уровень (0 - показать просто статистику): ")
+        level_normalize = level.strip().upper()
+        if not level_normalize:
+            print("Введите уровень")
+        elif level_normalize == "0":
+            return None
+        elif level_normalize not in allowed_levels:
+            print("Такого уровня нет")
+        else:
+            return level_normalize
+
 
 def parse_log_line(line):
     
@@ -31,6 +45,28 @@ def parse_log_line(line):
         "message": parts[2]
     }
     return line_dict
+
+
+def filter_by_level(log_entries, level):
+    log_list = []
+    for item in log_entries:
+        if item["level"] == level:
+            log_list.append(item)
+    return log_list
+
+
+def count_levels(log_entries):
+    result_dict = {
+        "INFO": 0,
+        "WARNING": 0,
+        "ERROR": 0,
+    }
+
+    for item in log_entries:
+        level = item["level"]
+        if level in result_dict:
+            result_dict[level] += 1
+    return result_dict
 
 
 def read_file(path):
@@ -53,11 +89,24 @@ def read_file(path):
         print("Не удалось прочитать файл")
 
 
-def show_entries(log_entries, corrupted_count):
-    for line in log_entries:
-        print(line)
+def show_entries(log_entries, corrupted_count, level):
+    count = count_levels(log_entries)
+    for key, value in count.items():
+        print(f"{key}: {value}")
+
     print(f"Количество корректных строк: {len(log_entries)}")
     print(f"Количество поврежденных строк: {corrupted_count}")
+    if level is None:
+        return
+    filtered_level = filter_by_level(log_entries, level)
+    if not filtered_level:
+        print(f"Записей по выбранному уровню '{level}' нет")
+    else:
+        print(f"Записи по выбранному уровню '{level}':")
+        for note in filtered_level:
+            for key, value in note.items():
+                print(f"{key}: {value}", end= " | ")
+            print()
 
 
 
@@ -65,4 +114,5 @@ path = get_path()
 result = read_file(path)
 if result is not None:
     log_entries, corrupted_count = result
-    show_entries(log_entries, corrupted_count)
+    level = input_level()
+    show_entries(log_entries, corrupted_count, level)
