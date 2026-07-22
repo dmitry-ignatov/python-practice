@@ -22,7 +22,7 @@ def get_path():
 def input_level():
     allowed_levels = ("ERROR", "WARNING", "INFO", "DEBUG")
     while True:
-        level = input("Введите нужный уровень (0 - показать просто статистику): ")
+        level = input("Введите нужный уровень (0 - пропуск): ")
         level_normalize = level.strip().upper()
         if not level_normalize:
             print("Введите уровень")
@@ -32,6 +32,18 @@ def input_level():
             print("Такого уровня нет")
         else:
             return level_normalize
+
+
+def input_message():
+    while True:
+        message = input("Введите текст сообщения для поиска (0 - пропуск): ")
+        message_normalize = message.strip().lower()
+        if not message_normalize:
+            print("Введите текст")
+        elif message_normalize == "0":
+            return None
+        else:
+            return message_normalize
 
 
 def parse_log_line(line):
@@ -51,6 +63,14 @@ def filter_by_level(log_entries, level):
     log_list = []
     for item in log_entries:
         if item["level"] == level:
+            log_list.append(item)
+    return log_list
+
+
+def search_by_text(log_entries, search_text):
+    log_list = []
+    for item in log_entries:
+        if search_text in item["message"].lower():
             log_list.append(item)
     return log_list
 
@@ -89,24 +109,35 @@ def read_file(path):
         print("Не удалось прочитать файл")
 
 
-def show_entries(log_entries, corrupted_count, level):
+def show_entries(log_entries, corrupted_count, level, search_text):
+
     count = count_levels(log_entries)
     for key, value in count.items():
         print(f"{key}: {value}")
-
     print(f"Количество корректных строк: {len(log_entries)}")
     print(f"Количество поврежденных строк: {corrupted_count}")
-    if level is None:
-        return
-    filtered_level = filter_by_level(log_entries, level)
-    if not filtered_level:
-        print(f"Записей по выбранному уровню '{level}' нет")
-    else:
-        print(f"Записи по выбранному уровню '{level}':")
-        for note in filtered_level:
-            for key, value in note.items():
-                print(f"{key}: {value}", end= " | ")
-            print()
+
+    if level is not None:
+        filtered_level = filter_by_level(log_entries, level)
+        if not filtered_level:
+            print(f"Записей по выбранному уровню '{level}' нет")
+        else:
+            print(f"Записи по выбранному уровню '{level}':")
+            for note in filtered_level:
+                for key, value in note.items():
+                    print(f"{key}: {value}", end= " | ")
+                print()
+
+    if search_text is not None:
+        found_entries = search_by_text(log_entries, search_text)
+        if not found_entries:
+            print(f"Записей по введенному тексту для поиска '{search_text}' нет")
+        else:
+            print("Записи найденные по введенному тексту: ")
+            for note in found_entries:
+                for key, value in note.items():
+                    print(f"{key}: {value}", end= " | ")
+                print()
 
 
 
@@ -115,4 +146,5 @@ result = read_file(path)
 if result is not None:
     log_entries, corrupted_count = result
     level = input_level()
-    show_entries(log_entries, corrupted_count, level)
+    search_text = input_message()
+    show_entries(log_entries, corrupted_count, level, search_text)
