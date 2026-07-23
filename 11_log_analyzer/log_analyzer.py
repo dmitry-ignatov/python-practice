@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+from collections import Counter
 
 
 
@@ -104,7 +105,7 @@ def search_by_level(log_entries, search_level):
         if item["level"] == search_level:
             log_list.append(item)
     show_search_results(log_list, f"Записей по выбранному уровню '{search_level}' нет", 
-                        f"Записи по выбранному уровню '{search_level}':")
+                                  f"Записи по выбранному уровню '{search_level}':")
     print()
 
 
@@ -114,7 +115,7 @@ def search_by_text(log_entries, search_text):
         if search_text in item["message"].lower():
             log_list.append(item)
     show_search_results(log_list, f"Записей по введенному тексту '{search_text}' нет", 
-                            "Записи найденные по введенному тексту: ")
+                                   "Записи найденные по введенному тексту: ")
     print()
 
 
@@ -124,7 +125,7 @@ def search_by_date(log_entries, search_date):
         if search_date == item["datetime"].date():
             log_list.append(item)
     show_search_results(log_list, f"Записей по введенной дате '{search_date}' нет", 
-                            "Записи найденные по введенной дате: ")
+                                   "Записи найденные по введенной дате: ")
     print()
 
 
@@ -171,11 +172,27 @@ def show_statistics(log_entries, corrupted_count):
     print(f"Количество поврежденных строк: {corrupted_count}\n")
 
 
+def show_frequent_errors(log_entries):
+    error_messages = []
+    for item in log_entries:
+        if item["level"] == "ERROR":
+            error_messages.append(item["message"])
+    counts = Counter(error_messages)
+    most_counts_errors = counts.most_common(3)
+    if not error_messages:
+        print("ERROR отсутствуют")
+    else:
+        print("Топ 3 частых ERROR:")
+        for item in most_counts_errors:
+            print(f"Ошибка: {item[0]}, Количество: {item[1]}")
+    print()
+
 def show_menu():
     print(f"1. Поиск по уровню\n"
           f"2. Поиск по тексту\n" 
           f"3. Поиск по дате\n" 
           f"4. Показать статистику\n"
+          f"5. Показать частые ошибки\n"
           f"0. Выход\n")
 
 
@@ -203,6 +220,9 @@ def executing_commands(log_entries, corrupted_count):
 
         elif command == "4":
             show_statistics(log_entries, corrupted_count)
+
+        elif command == "5":
+            show_frequent_errors(log_entries)
 
         elif command == "0":
             break
