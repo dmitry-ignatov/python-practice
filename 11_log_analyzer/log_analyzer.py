@@ -163,29 +163,75 @@ def read_file(path):
         print("Не удалось прочитать файл")
 
 
-def show_statistics(log_entries, corrupted_count):
-
+def get_statistics(log_entries, corrupted_count):
+    statistics = [f"Количество корректных строк: {len(log_entries)}", f"Количество поврежденных строк: {corrupted_count}\n"]
     count = count_levels(log_entries)
     for key, value in count.items():
-        print(f"{key}: {value}")
-    print(f"Количество корректных строк: {len(log_entries)}")
-    print(f"Количество поврежденных строк: {corrupted_count}\n")
+        statistics.append(f"{key}: {value}")
+    return statistics
 
 
-def show_frequent_errors(log_entries):
+def show_statistics(log_entries, corrupted_count):
+    statistics = get_statistics(log_entries, corrupted_count)
+    print("\n".join(statistics))
+    print()
+
+
+def get_frequent_errors(log_entries):
     error_messages = []
     for item in log_entries:
         if item["level"] == "ERROR":
             error_messages.append(item["message"])
     counts = Counter(error_messages)
     most_counts_errors = counts.most_common(3)
+    return error_messages, most_counts_errors
+    
+
+def get_top3_errors(log_entries):
+    error_messages, most_counts_errors = get_frequent_errors(log_entries)
     if not error_messages:
+        return None
+    else:
+        top3_errors = []
+        for item in most_counts_errors:
+            top3_errors.append(f"Ошибка: {item[0]}, Количество: {item[1]}")
+        return top3_errors
+
+
+def show_top3_errors(log_entries):
+    top3_errors = get_top3_errors(log_entries)
+    if top3_errors is None:
         print("ERROR отсутствуют")
     else:
-        print("Топ 3 частых ERROR:")
-        for item in most_counts_errors:
-            print(f"Ошибка: {item[0]}, Количество: {item[1]}")
+        print("\n".join(top3_errors))
     print()
+
+
+def save_file(path, log_entries, corrupted_count):
+    statistics = get_statistics(log_entries, corrupted_count)
+    top3_errors = get_top3_errors(log_entries)
+
+    report_path = path.parent / f"{path.stem}_report.txt"
+    try:
+        with open(report_path, "w", encoding= "utf-8") as file:
+            file.write(f"ОТЧЕТ ПО ЛОГУ: {path.name}\n"
+                        "\nСТАТИСТИКА\n\n")
+            for text in statistics:
+                file.write(f"{text}\n")
+            
+            if top3_errors is None:
+                file.write("\nERROR отсутствуют")
+            else:
+                file.write("\nСАМЫЕ ЧАСТЫЕ ОШИБКИ\n\n")
+                for error in top3_errors:
+                    file.write(f"{error}\n")
+        print(f"Отчет сохранен в {report_path}\n")
+    except PermissionError:
+        print("Доступ к файлу запрещен\n")
+    except OSError:
+        print("Не удалось сохранить файл\n")
+
+
 
 def show_menu():
     print(f"1. Поиск по уровню\n"
@@ -193,10 +239,11 @@ def show_menu():
           f"3. Поиск по дате\n" 
           f"4. Показать статистику\n"
           f"5. Показать частые ошибки\n"
+          f"6. Сохранить отчет\n"
           f"0. Выход\n")
 
 
-def executing_commands(log_entries, corrupted_count):
+def executing_commands(log_entries, corrupted_count, path):
     while True:
         show_menu()
         command = input("Введите команду: ").strip()
@@ -222,7 +269,10 @@ def executing_commands(log_entries, corrupted_count):
             show_statistics(log_entries, corrupted_count)
 
         elif command == "5":
-            show_frequent_errors(log_entries)
+            show_top3_errors(log_entries)
+
+        elif command == "6":
+            save_file(path, log_entries, corrupted_count)
 
         elif command == "0":
             break
@@ -236,5 +286,5 @@ path = get_path()
 result = read_file(path)
 if result is not None:
     log_entries, corrupted_count = result
-    executing_commands(log_entries, corrupted_count)
+    executing_commands(log_entries, corrupted_count, path)
     
