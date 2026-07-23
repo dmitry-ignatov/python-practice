@@ -281,10 +281,15 @@ def executing_commands(log_entries, corrupted_count, path):
             print(f"Введена неверная команда\n")
 
 
+def main():
+    path = get_path()
+    result = read_file(path)
+    if result is not None:
+        log_entries, corrupted_count = result
+        executing_commands(log_entries, corrupted_count, path)
 
-path = get_path()
-result = read_file(path)
-if result is not None:
-    log_entries, corrupted_count = result
-    executing_commands(log_entries, corrupted_count, path)
+
+
+if __name__ == "__main__":
+    main()
     
