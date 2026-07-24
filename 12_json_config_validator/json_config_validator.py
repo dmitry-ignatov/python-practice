@@ -46,6 +46,10 @@ def get_incorrect_type_fields(data):
 def get_invalid_value_fields(data, missing_fields, incorrect_type_fields):
     invalid_value_fields = []
 
+    if not ("app_name" in missing_fields or "app_name" in incorrect_type_fields):
+        if not data["app_name"].strip():
+            invalid_value_fields.append("app_name")
+
     if not ("log_level" in missing_fields or "log_level" in incorrect_type_fields):
         allowed_log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if data["log_level"] not in allowed_log_levels:
@@ -91,13 +95,17 @@ def show_json_content(data):
         print(f"{key}: {value}")
 
 
-json_path = Path(__file__).parent / "config.json"
-data = get_json(json_path)
-if data is not None:
-    if is_dict(data):
-        show_json_content(data)
-        missing_fields, incorrect_type_fields, invalid_value_fields = check_fields_errors(data)
-        show_fields_errors(missing_fields, incorrect_type_fields, invalid_value_fields)
-    else:
-        print("Содержимое JSON не является словарем")
+def main():
+    json_path = Path(__file__).parent / "config.json"
+    data = get_json(json_path)
+    if data is not None:
+        if is_dict(data):
+            show_json_content(data)
+            missing_fields, incorrect_type_fields, invalid_value_fields = check_fields_errors(data)
+            show_fields_errors(missing_fields, incorrect_type_fields, invalid_value_fields)
+        else:
+            print("Содержимое JSON не является словарем")
 
+
+if __name__ == "__main__":
+    main()
