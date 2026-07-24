@@ -1,0 +1,6 @@
+{
+    "app_name": "Task Manager",
+    "debug": true,
+    "max_users": 100,
+    "log_level": "INFO"
+}
