@@ -1,4 +1,4 @@
-from json_config_validator import is_dict, get_missing_fields, get_incorrect_type_fields, get_invalid_value_fields
+from json_config_validator import is_dict, get_missing_fields, get_incorrect_type_fields, get_invalid_value_fields, check_fields_errors
 
 
 def test_is_dict_returns_true_for_dict():
@@ -105,3 +105,24 @@ def test_get_invalid_value_fields_skips_field_with_incorrect_type():
     }
 
     assert get_invalid_value_fields(test_dict, [], ["max_users"]) == []
+
+
+def test_check_fields_errors_returns_all_error_categories():
+    test_dict = {
+        "app_name": "  ",
+        "debug": "yes",
+        "max_users": 100,
+    }
+
+    assert check_fields_errors(test_dict) == (["log_level"], ["debug"], ["app_name"])
+
+
+def test_check_fields_errors_returns_empty_lists_for_valid_config():
+    test_dict = {
+        "app_name": "Task Manager",
+        "debug": True,
+        "max_users": 100,
+        "log_level": "INFO"
+    }
+
+    assert check_fields_errors(test_dict) == ([], [], [])
