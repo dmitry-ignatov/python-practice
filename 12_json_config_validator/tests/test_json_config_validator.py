@@ -1,4 +1,4 @@
-from json_config_validator import is_dict, get_missing_fields, get_incorrect_type_fields, get_invalid_value_fields, check_fields_errors
+from json_config_validator import is_dict, get_missing_fields, get_incorrect_type_fields, get_invalid_value_fields, check_fields_errors, get_json
 
 
 def test_is_dict_returns_true_for_dict():
@@ -126,3 +126,22 @@ def test_check_fields_errors_returns_empty_lists_for_valid_config():
     }
 
     assert check_fields_errors(test_dict) == ([], [], [])
+
+
+def test_get_json_returns_data_from_valid_file(tmp_path):
+    json_path = tmp_path / "config.json"
+    json_path.write_text('{"app_name": "Task Manager"}', encoding="utf-8")
+
+    assert get_json(json_path) == {"app_name": "Task Manager"}
+
+
+def test_get_json_returns_none_for_missing_file(tmp_path):
+    json_path = tmp_path / "missing.json"
+    assert get_json(json_path) is None
+
+
+def test_get_json_returns_none_for_invalid_json(tmp_path):
+    json_path = tmp_path / "invalid.json"
+    json_path.write_text('{"app_name": "}', encoding="utf-8")
+
+    assert get_json(json_path) is None
