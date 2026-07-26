@@ -4,6 +4,17 @@ from json_config_validator import (is_dict, get_missing_fields, get_incorrect_ty
                                    )
 import pytest
 
+
+@pytest.fixture
+def valid_config():
+    return {
+        "app_name": "Task Manager",
+        "debug": True,
+        "max_users": 100,
+        "log_level": "INFO"
+    }
+
+
 @pytest.mark.parametrize(
         "data, expected",
         [
@@ -19,44 +30,47 @@ def test_is_dict(data, expected):
         "test_dict, expected",
         [
             (
-            {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "TRACE"
-            }, ["log_level"]
+                {
+                    "app_name": "Task Manager",
+                    "debug": True,
+                    "max_users": 100,
+                    "log_level": "TRACE"
+                },
+                ["log_level"]
             ),
 
             (
-            {
-        "app_name": "  ",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "INFO"
-            }, ["app_name"]
+                {
+                    "app_name": "  ",
+                    "debug": True,
+                    "max_users": 100,
+                    "log_level": "INFO"
+                },
+                ["app_name"]
             ),
 
             (
-            {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 0,
-        "log_level": "INFO"
-            }, ["max_users"]
+                {
+                    "app_name": "Task Manager",
+                    "debug": True,
+                    "max_users": 0,
+                    "log_level": "INFO"
+                },
+                ["max_users"]
             ),
 
             (
-            {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "INFO"
-            }, []   
+                {
+                    "app_name": "Task Manager",
+                    "debug": True,
+                    "max_users": 100,
+                    "log_level": "INFO"
+                },
+                []   
             )
         ]
 )
 def test_get_invalid_value_fields_returns_expected_result(test_dict, expected):
-    
     assert get_invalid_value_fields(test_dict, [], []) == expected
 
 
@@ -66,19 +80,11 @@ def test_get_missing_fields_returns_missing_field():
         "debug": True,
         "max_users": 100
     }
-
     assert get_missing_fields(test_dict) == ["log_level"]
 
 
-def test_get_missing_fields_returns_empty_list_for_complete_config():
-    test_dict = {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "INFO"
-    }
-    
-    assert get_missing_fields(test_dict) == []
+def test_get_missing_fields_returns_empty_list_for_complete_config(valid_config):
+    assert get_missing_fields(valid_config) == []
 
 
 def test_get_incorrect_type_fields_rejects_bool_for_max_users():
@@ -92,15 +98,8 @@ def test_get_incorrect_type_fields_rejects_bool_for_max_users():
     assert get_incorrect_type_fields(test_dict) == ["max_users"]
 
 
-def test_get_incorrect_type_fields_returns_empty_list_for_correct_types():
-    test_dict = {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "INFO"
-    }
-
-    assert get_incorrect_type_fields(test_dict) == []
+def test_get_incorrect_type_fields_returns_empty_list_for_correct_types(valid_config):
+    assert get_incorrect_type_fields(valid_config) == []
 
 
 def test_get_invalid_value_fields_skips_field_with_incorrect_type():
@@ -124,15 +123,8 @@ def test_check_fields_errors_returns_all_error_categories():
     assert check_fields_errors(test_dict) == (["log_level"], ["debug"], ["app_name"])
 
 
-def test_check_fields_errors_returns_empty_lists_for_valid_config():
-    test_dict = {
-        "app_name": "Task Manager",
-        "debug": True,
-        "max_users": 100,
-        "log_level": "INFO"
-    }
-
-    assert check_fields_errors(test_dict) == ([], [], [])
+def test_check_fields_errors_returns_empty_lists_for_valid_config(valid_config):
+    assert check_fields_errors(valid_config) == ([], [], [])
 
 
 def test_get_json_returns_data_from_valid_file(tmp_path):
