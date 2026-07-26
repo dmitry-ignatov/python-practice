@@ -1,4 +1,7 @@
-from json_config_validator import is_dict, get_missing_fields, get_incorrect_type_fields, get_invalid_value_fields, check_fields_errors, get_json
+from json_config_validator import (is_dict, get_missing_fields, get_incorrect_type_fields, 
+                                   get_invalid_value_fields, check_fields_errors, get_json, 
+                                   show_json_content, show_fields_errors
+                                   )
 
 
 def test_is_dict_returns_true_for_dict():
@@ -145,3 +148,58 @@ def test_get_json_returns_none_for_invalid_json(tmp_path):
     json_path.write_text('{"app_name": "}', encoding="utf-8")
 
     assert get_json(json_path) is None
+
+
+def test_show_json_content_prints_all_fields(capsys):
+    test_dict = {
+        "app_name": "Task Manager",
+        "debug": True
+    }
+    show_json_content(test_dict)
+    captured = capsys.readouterr()
+
+    assert captured.out == "app_name: Task Manager\ndebug: True\n"
+
+
+def test_show_fields_errors_prints_all_error_categories(capsys):
+    show_fields_errors(
+        ["log_level"],
+        ["debug"],
+        ["app_name"]
+    )
+
+    captured = capsys.readouterr()
+
+    assert captured.out == """В JSON файле отсутствуют поля:
+'log_level'
+
+В JSON файле неправильный тип данных у:
+'debug'
+
+В JSON файле некорректные значения в:
+'app_name'
+
+"""
+
+
+def test_show_fields_errors_prints_nothing_without_errors(capsys):
+    show_fields_errors([], [], [])
+
+    captured = capsys.readouterr()
+
+    assert captured.out == ""
+
+
+def test_get_json_prints_message_for_missing_file(tmp_path, capsys):
+    json_path = tmp_path / "missing.json"
+    get_json(json_path)
+    captured = capsys.readouterr()
+    assert captured.out == "Файл JSON не найден\n"
+
+
+def test_get_json_prints_message_for_invalid_json(tmp_path, capsys):
+    json_path = tmp_path / "invalid.json"
+    json_path.write_text('{"app_name": "}', encoding="utf-8")
+    get_json(json_path)
+    captured = capsys.readouterr()
+    assert captured.out == "Некорректный формат JSON\n"
