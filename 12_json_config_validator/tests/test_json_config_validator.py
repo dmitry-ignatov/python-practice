@@ -1,3 +1,5 @@
+import json_config_validator
+
 from json_config_validator import (is_dict, get_missing_fields, get_incorrect_type_fields, 
                                    get_invalid_value_fields, check_fields_errors, get_json, 
                                    show_json_content, show_fields_errors
@@ -72,6 +74,86 @@ def test_is_dict(data, expected):
 )
 def test_get_invalid_value_fields_returns_expected_result(test_dict, expected):
     assert get_invalid_value_fields(test_dict, [], []) == expected
+
+
+def test_main_prints_message_for_non_dict(monkeypatch, capsys):
+    def fake_get_json(json_path):
+        return []
+
+    monkeypatch.setattr(
+        json_config_validator,
+        "get_json",
+        fake_get_json
+    )
+
+    json_config_validator.main()
+    captured = capsys.readouterr()
+
+    assert captured.out == "Содержимое JSON не является словарем\n"
+
+
+def test_main_prints_valid_config(monkeypatch, capsys, valid_config):
+    def fake_get_json(json_path):
+        return valid_config
+    
+    monkeypatch.setattr(
+        json_config_validator,
+        "get_json",
+        fake_get_json
+    )
+
+    json_config_validator.main()
+    captured = capsys.readouterr()
+
+    assert captured.out == "app_name: Task Manager\ndebug: True\nmax_users: 100\nlog_level: INFO\n"
+
+
+def test_main_prints_config_and_field_errors(monkeypatch, capsys):
+    def fake_get_json(json_path):
+        return {
+            "app_name": "Task Manager",
+            "debug": "yes",
+            "max_users": 0
+        }
+
+    monkeypatch.setattr(
+        json_config_validator,
+        "get_json",
+        fake_get_json
+    )
+
+    json_config_validator.main()
+    captured = capsys.readouterr()
+
+    assert captured.out == """app_name: Task Manager
+debug: yes
+max_users: 0
+В JSON файле отсутствуют поля:
+'log_level'
+
+В JSON файле неправильный тип данных у:
+'debug'
+
+В JSON файле некорректные значения в:
+'max_users'
+
+"""
+
+
+def test_main_prints_nothing_when_get_json_returns_none(monkeypatch, capsys):
+    def fake_get_json(json_path):
+        return None
+
+    monkeypatch.setattr(
+        json_config_validator,
+        "get_json",
+        fake_get_json
+    )
+
+    json_config_validator.main()
+    captured = capsys.readouterr()
+
+    assert captured.out == ""
 
 
 def test_get_missing_fields_returns_missing_field():
