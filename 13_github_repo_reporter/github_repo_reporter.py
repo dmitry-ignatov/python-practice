@@ -2,6 +2,22 @@ import requests
 from datetime import datetime
 
 
+def input_repository_name():
+    while True:
+        repo_name = input("Введите название репозитория в формате владелец/репозиторий: ")
+        normalized_repo_name = repo_name.strip()
+        if not normalized_repo_name:
+            print("Введен пустой текст")
+        else:
+            repo_name_parts = normalized_repo_name.split("/")
+            if len(repo_name_parts) != 2:
+                print("Введен неверный формат")
+            elif "" in repo_name_parts or any(char.isspace() for part in repo_name_parts for char in part):
+                print("Введен неверный формат")
+            else:
+                return normalized_repo_name
+
+
 def get_repository_response(repo_full_name):
     response = requests.get(
         f"https://api.github.com/repos/{repo_full_name}",
@@ -11,7 +27,8 @@ def get_repository_response(repo_full_name):
     return response
 
 
-result = get_repository_response("psf/requests")
+repo_name = input_repository_name()
+result = get_repository_response(repo_name)
 if result.status_code == 200:
     repository_data = result.json()
     print(f"Название: {repository_data['name']}")
@@ -22,8 +39,9 @@ if result.status_code == 200:
     print(f"Количество форков: {repository_data['forks_count']}")
     print(f"Количество открытых задач: {repository_data['open_issues_count']}")
     date_time = datetime.strptime(repository_data['updated_at'], "%Y-%m-%dT%H:%M:%SZ")
-    format_datetime = datetime.strftime(date_time, "%d.%m.%Y %H:%M:%S")
-    print(f"Последнее обновление: {format_datetime}")
-
+    formatted_datetime = date_time.strftime("%d.%m.%Y %H:%M:%S")
+    print(f"Последнее обновление: {formatted_datetime}")
+elif result.status_code == 404:
+    print("Репозиторий не найден")
 else:
-    print(f"Код ошибки {result.status_code}")
+    print(f"Код ошибки: {result.status_code}")
