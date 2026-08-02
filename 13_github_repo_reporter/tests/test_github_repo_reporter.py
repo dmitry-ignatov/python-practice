@@ -106,3 +106,21 @@ def test_input_repository_name(monkeypatch):
     )
 
     assert input_repository_name() == "user/test-repo"
+
+
+def test_input_empty_repository_name(monkeypatch, capsys):
+    answers = iter(["  ", "user/test-repo"])
+    
+    def fake_input(prompt):
+        return next(answers)
+
+    monkeypatch.setattr(
+        "builtins.input",
+        fake_input
+    )
+
+    result = input_repository_name()
+    captured = capsys.readouterr()
+
+    assert captured.out == "Введен пустой текст\n"
+    assert result == "user/test-repo"
