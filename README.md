@@ -249,6 +249,27 @@
 
 ---
 
+### [13_github_repo_reporter](13_github_repo_reporter)
+
+Консольная программа для получения информации о репозитории через GitHub REST API и создания текстового отчёта.
+
+Программа позволяет:
+
+* принимать имя репозитория в формате `владелец/репозиторий`;
+* проверять пустой ввод, структуру имени и пробельные символы;
+* отправлять GET-запрос к GitHub API через `requests`;
+* получать и обрабатывать JSON-ответ;
+* показывать название, описание, язык, звёзды, форки и открытые задачи;
+* преобразовывать дату последнего обновления;
+* выводить отчёт в консоль;
+* сохранять отчёт в `repository_report.txt`;
+* обрабатывать HTTP-коды, сетевые и файловые ошибки;
+* автоматически проверять основную логику через 7 тестов.
+
+Основные темы: REST API, HTTP-запросы, библиотека `requests`, JSON-ответы, `timeout`, исключения `requests.Timeout` и `requests.RequestException`, `datetime.strptime()`, `strftime()`, `pathlib`, `pytest`, `monkeypatch`, `capsys`, `iter()` и `next()`.
+
+---
+
 ## Как запускать проекты
 
 Каждый проект находится в отдельной папке и содержит собственный `README.md` с подробным описанием.
@@ -343,6 +364,20 @@ python json_config_validator.py
 python -m pytest
 ```
 
+### GitHub Repo Reporter
+
+```bash
+cd 13_github_repo_reporter
+python -m pip install requests
+python github_repo_reporter.py
+```
+
+Тесты проекта:
+
+```bash
+python -m pytest
+```
+
 ## Статус
 
 Завершённые учебные проекты:
@@ -358,6 +393,7 @@ python -m pytest
 * `09_password_checker`;
 * `10_text_report_analyzer`;
 * `11_log_analyzer`;
-* `12_json_config_validator`.
+* `12_json_config_validator`;
+* `13_github_repo_reporter`.
 
 Репозиторий продолжает пополняться новыми проектами по мере изучения Python.
