@@ -27,12 +27,14 @@ def get_location_response(city_name):
             params=params,
             timeout=10
         )
+        
         if location_response.status_code == 200: 
-            if "results" not in location_response.json() or location_response.json()["results"] == []:
+            location_response_json_data = location_response.json()
+            if "results" not in location_response_json_data or location_response_json_data["results"] == []:
                 print("Города с таким названием нет")
                 return None
             else:
-                return location_response
+                return location_response_json_data
         else:
             print("Ошибка запроса")
     
@@ -42,24 +44,10 @@ def get_location_response(city_name):
         print("Ошибка соединения")
 
 
-def get_json_format(location_response, forecast_response):
-    json_data_format = {
-                        "location_response": "",
-                        "forecast_response": ""
-                        }
-    if location_response is not None:
-        json_data_format["location_response"] = location_response.json()
-    if forecast_response is not None:
-        json_data_format["forecast_response"] = forecast_response.json()
-
-    return json_data_format
-
-
 def get_forecast_response(location_response):
-    json_data_format = get_json_format(location_response, None)
     params = {
-        "latitude": json_data_format["location_response"]["results"][0]["latitude"],
-        "longitude": json_data_format["location_response"]["results"][0]["longitude"],
+        "latitude": location_response["results"][0]["latitude"],
+        "longitude": location_response["results"][0]["longitude"],
         "current": (
             "temperature_2m,"
             "apparent_temperature,"
@@ -83,7 +71,7 @@ def get_forecast_response(location_response):
             timeout=10
         )
         if forecast_response.status_code == 200:
-            return forecast_response
+            return forecast_response.json()
         else:
             print("Ошибка запроса")
 
@@ -94,13 +82,12 @@ def get_forecast_response(location_response):
     
 
 def get_weather_conditions(forecast_response, prompt):
-    json_data_format = get_json_format(None, forecast_response)
     weathers = []
 
     if prompt == "current":
-        weather_code = [str(json_data_format["forecast_response"]["current"]["weather_code"])]
+        weather_code = [str(forecast_response["current"]["weather_code"])]
     elif prompt == "daily":
-        weather_code_int = json_data_format["forecast_response"]["daily"]["weather_code"]
+        weather_code_int = forecast_response["daily"]["weather_code"]
         weather_code = [str(code) for code in weather_code_int]
     for code in weather_code:
         if code == "0":
@@ -165,35 +152,33 @@ def get_weather_conditions(forecast_response, prompt):
     return weathers
 
 def get_current_time(forecast_response):
-    json_data_format = get_json_format(None, forecast_response)
-    date_time = datetime.strptime(json_data_format["forecast_response"]["current"]["time"], "%Y-%m-%dT%H:%M")
+    date_time = datetime.strptime(forecast_response["current"]["time"], "%Y-%m-%dT%H:%M")
     date_time = datetime.strftime(date_time, "%Y-%m-%d %H:%M")
     return date_time
 
 
 def create_technical_report(location_response, forecast_response):
-    json_data_format = get_json_format(location_response, forecast_response)
     weather_conditions_current = get_weather_conditions(forecast_response, "current")
     weather_conditions_daily = get_weather_conditions(forecast_response, "daily")
     date_time = get_current_time(forecast_response)
 
     technical_report = {
-        "name": json_data_format["location_response"]["results"][0]["name"], 
-        "country": json_data_format["location_response"]["results"][0]["country"], 
-        "latitude": str(json_data_format["location_response"]["results"][0]["latitude"]), 
-        "longitude": str(json_data_format["location_response"]["results"][0]["longitude"]),
+        "name": location_response["results"][0]["name"], 
+        "country": location_response["results"][0]["country"], 
+        "latitude": str(location_response["results"][0]["latitude"]), 
+        "longitude": str(location_response["results"][0]["longitude"]),
 
         "date time": date_time,
-        "temperature": json_data_format["forecast_response"]["current"]["temperature_2m"],
-        "apparent temperature": json_data_format["forecast_response"]["current"]["apparent_temperature"],
+        "temperature": forecast_response["current"]["temperature_2m"],
+        "apparent temperature": forecast_response["current"]["apparent_temperature"],
         "current weather conditions": weather_conditions_current[0],
-        "wind speed": json_data_format["forecast_response"]["current"]["wind_speed_10m"],
+        "wind speed": forecast_response["current"]["wind_speed_10m"],
 
-        "time": json_data_format["forecast_response"]["daily"]["time"],
+        "time": forecast_response["daily"]["time"],
         "daily weather conditions": weather_conditions_daily,
-        "temperature min": json_data_format["forecast_response"]["daily"]["temperature_2m_min"],
-        "temperature max": json_data_format["forecast_response"]["daily"]["temperature_2m_max"],
-        "precipitation probability": json_data_format["forecast_response"]["daily"]["precipitation_probability_max"],
+        "temperature min": forecast_response["daily"]["temperature_2m_min"],
+        "temperature max": forecast_response["daily"]["temperature_2m_max"],
+        "precipitation probability": forecast_response["daily"]["precipitation_probability_max"],
     }
 
     return technical_report
@@ -216,8 +201,8 @@ def create_report(technical_report):
         f"Долгота: {technical_report["longitude"]}\n",
         
         "Текущая дата и время: ",
-        f"{technical_report["date time"]}",
-        f"Текущая погода:\n",
+        f"{technical_report["date time"]}\n",
+        f"Текущая погода:",
         f"Температура: {technical_report["temperature"]} °C",
         f"Ощущается как: {technical_report["apparent temperature"]} °C",
         f"Состояние: {technical_report["current weather conditions"]}",
@@ -237,7 +222,7 @@ def show_report(report):
 
 
 def save_report(report, location_response):
-    path = Path(__file__).parent.resolve() / f"{location_response.json()["results"][0]["name"]}_{datetime.now().strftime("%Y.%m.%d_%H-%M")}_weather_report.txt"
+    path = Path(__file__).parent.resolve() / f"{location_response["results"][0]["name"]}_{datetime.now().strftime("%Y.%m.%d_%H-%M")}_weather_report.txt"
     try:
         with open(path, "w", encoding="utf-8") as file:
             file.write("\n".join(report))

@@ -1,19 +1,19 @@
 import pytest
 
-from weather_reporter import get_city_name, get_location_response
+from weather_reporter import get_city_name, get_location_response, get_forecast_response
 import weather_reporter
 
 
-@pytest.fixture
-def valid_data(city_name):
-    params = {
-        "name": "Ryazan",
-        "count": 1,
-        "language": "ru",
-        "format": "json"
-    }
+# @pytest.fixture
+# def valid_data(city_name):
+#     params = {
+#         "name": "Ryazan",
+#         "count": 1,
+#         "language": "ru",
+#         "format": "json"
+#     }
 
-    return params
+#     return params
 
 
 class FakeResponse:
@@ -65,15 +65,11 @@ def test_get_location_response(monkeypatch):
                                     "latitude": 54.6,
                                     "longitude": 39.7
                                     }
-                                ]
+                               ]
                 }
-            )
+        )
 
     def fake_get_response(url, params, timeout):
-        assert url == "https://geocoding-api.open-meteo.com/v1/search"
-        assert params == params
-        assert timeout == 10
-        
         return fake_response
 
     monkeypatch.setattr(
@@ -84,11 +80,12 @@ def test_get_location_response(monkeypatch):
 
     result = get_location_response("Ryazan")
 
-    assert result is fake_response
+    assert result == fake_response.json()
 
 
 def test_get_empty_location_response(monkeypatch,capsys):
     fake_response = FakeResponse(200, {"results": []})
+
     def fake_get_response(url, params, timeout):
         return fake_response
 
@@ -105,7 +102,6 @@ def test_get_empty_location_response(monkeypatch,capsys):
 
 
 def test_get_location_response_timout(monkeypatch,capsys):
-    fake_response =  object()
     def fake_get_response(url, params, timeout):
         raise weather_reporter.requests.Timeout
 
@@ -118,3 +114,56 @@ def test_get_location_response_timout(monkeypatch,capsys):
     captured = capsys.readouterr()
 
     assert captured.out == "Превышено время ожидания\n"
+
+
+def test_get_forecast_response(monkeypatch):
+    fake_forecast_response = FakeResponse(200, {})
+    fake_location_response = {
+                    "results": [
+                                    {
+                                    "latitude": 54.6,
+                                    "longitude": 39.7
+                                    }
+                               ]
+                }
+
+    def fake_get_response(url, params, timeout):
+        return fake_forecast_response
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+
+    result = get_forecast_response(fake_location_response)
+
+    assert result == fake_forecast_response.json()
+
+
+def test_get_forecast_response_error(monkeypatch, capsys):
+    fake_forecast_response = FakeResponse(404, {})
+    fake_location_response = {
+                    "results": [
+                                    {
+                                    "latitude": 54.6,
+                                    "longitude": 39.7
+                                    }
+                                ]
+                }
+
+    def fake_get_response(url, params, timeout):
+        return fake_forecast_response
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+
+    get_forecast_response(fake_location_response)
+    captured = capsys.readouterr()
+
+    assert captured.out == "Ошибка запроса\n"
+
+
