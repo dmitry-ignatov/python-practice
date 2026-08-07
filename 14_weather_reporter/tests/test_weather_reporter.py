@@ -1,19 +1,51 @@
 import pytest
 
-from weather_reporter import get_city_name, get_location_response, get_forecast_response
+from weather_reporter import (get_city_name, get_location_response, 
+                              get_forecast_response, get_weather_conditions, 
+                              create_technical_report, get_weather_conditions, 
+                              get_3day_forecast, create_report)
 import weather_reporter
 
+@pytest.fixture
+def location_response_data():
+    response_data = {
+        "results": 
+                    [
+                        {       
+                            "name": "Рязань", 
+                            "country": "Россия", 
+                            "latitude": 54.625, 
+                            "longitude": 39.6875
+                        }
+                    ]
+    }
 
-# @pytest.fixture
-# def valid_data(city_name):
-#     params = {
-#         "name": "Ryazan",
-#         "count": 1,
-#         "language": "ru",
-#         "format": "json"
-#     }
+    return response_data
 
-#     return params
+
+@pytest.fixture
+def forecast_response_data():
+    response_data = {
+        "current": 
+                    {
+                        "time": "2026-08-07T16:45",
+                        "temperature_2m": 31.3,
+                        "apparent_temperature": 33.0,
+                        "weather_code": 3,
+                        "wind_speed_10m": 12.3,
+                    },
+
+        "daily": 
+                    {
+                        "time": ['2026-08-07', '2026-08-08', '2026-08-09'],
+                        "weather_code": [95, 96, 61],
+                        "temperature_2m_min": [20.6, 17.5, 15.0],
+                        "temperature_2m_max": [32.2, 25.1, 24.0],
+                        "precipitation_probability_max": [28, 50, 35]
+                    }
+    }
+
+    return response_data
 
 
 class FakeResponse:
@@ -24,6 +56,7 @@ class FakeResponse:
 
     def json(self):
         return self.json_data
+
 
 
 def test_input_city_name(monkeypatch):
@@ -56,18 +89,9 @@ def test_input_empty_city_name(monkeypatch, capsys):
     assert result == "Ryazan"
 
 
-def test_get_location_response(monkeypatch):
+def test_get_location_response(monkeypatch, location_response_data):
     
-    fake_response = FakeResponse(200, 
-                {
-                    "results": [
-                                    {
-                                    "latitude": 54.6,
-                                    "longitude": 39.7
-                                    }
-                               ]
-                }
-        )
+    fake_response = FakeResponse(200, location_response_data)
 
     def fake_get_response(url, params, timeout):
         return fake_response
@@ -116,16 +140,8 @@ def test_get_location_response_timout(monkeypatch,capsys):
     assert captured.out == "Превышено время ожидания\n"
 
 
-def test_get_forecast_response(monkeypatch):
+def test_get_forecast_response(monkeypatch, location_response_data):
     fake_forecast_response = FakeResponse(200, {})
-    fake_location_response = {
-                    "results": [
-                                    {
-                                    "latitude": 54.6,
-                                    "longitude": 39.7
-                                    }
-                               ]
-                }
 
     def fake_get_response(url, params, timeout):
         return fake_forecast_response
@@ -136,21 +152,13 @@ def test_get_forecast_response(monkeypatch):
         fake_get_response
     )
 
-    result = get_forecast_response(fake_location_response)
+    result = get_forecast_response(location_response_data)
 
     assert result == fake_forecast_response.json()
 
 
-def test_get_forecast_response_error(monkeypatch, capsys):
+def test_get_forecast_response_error(monkeypatch, capsys, location_response_data):
     fake_forecast_response = FakeResponse(404, {})
-    fake_location_response = {
-                    "results": [
-                                    {
-                                    "latitude": 54.6,
-                                    "longitude": 39.7
-                                    }
-                                ]
-                }
 
     def fake_get_response(url, params, timeout):
         return fake_forecast_response
@@ -161,9 +169,62 @@ def test_get_forecast_response_error(monkeypatch, capsys):
         fake_get_response
     )
 
-    get_forecast_response(fake_location_response)
+    get_forecast_response(location_response_data)
     captured = capsys.readouterr()
 
     assert captured.out == "Ошибка запроса\n"
+
+
+def test_get_weather_conditions_current(forecast_response_data):
+
+    assert get_weather_conditions(forecast_response_data, "current") == ["пасмурно"]
+
+
+def test_get_weather_conditions_daily(forecast_response_data):
+
+    assert get_weather_conditions(forecast_response_data, "daily") == ["гроза", "гроза со слабым градом", "слабый дождь"]
+
+
+def test_create_technical_report(location_response_data, forecast_response_data):
+    current_weather_conditions = get_weather_conditions(forecast_response_data, "current")
+    daily_weather_conditions = get_weather_conditions(forecast_response_data, "daily")
+    result = create_technical_report(location_response_data, forecast_response_data)
+
+    assert result["name"] == "Рязань"
+    assert result["latitude"] == "54.625"
+    assert result["date time"] == "2026-08-07 16:45"
+    assert result["time"] == ['2026-08-07', '2026-08-08', '2026-08-09']
+    assert result["current weather conditions"] == current_weather_conditions[0]
+    assert result["temperature max"] == [32.2, 25.1, 24.0]
+    assert result["daily weather conditions"] == daily_weather_conditions
+
+
+def test_create_report():
+    technical_report = {
+        "name": "Рязань",
+        "country": "Россия",
+        "latitude": "54.625",
+        "longitude": "39.6875",
+        "date time": "2026-08-07 16:45",
+        "temperature": 31.3,
+        "apparent temperature": 33.0,
+        "current weather conditions": "пасмурно",
+        "time": ['2026-08-07', '2026-08-08', '2026-08-09'],
+        "temperature max": [32.2, 25.1, 24.0],
+        "temperature min": [20.6, 17.5, 15.0],
+        "daily weather conditions": ["гроза", "гроза со слабым градом", "слабый дождь"],
+        "wind speed": 12.3,
+        "precipitation probability": [28, 50, 35]
+    }
+
+    
+    result = create_report(technical_report)
+
+    assert result[0] == f"Название города: {technical_report["name"]}"
+    assert result[2] == f"Широта: {technical_report["latitude"]}"
+    assert result[5] == f"{technical_report["date time"]}\n"
+    assert result[12] == get_3day_forecast(technical_report, 0)
+    assert result[13] == get_3day_forecast(technical_report, 1)
+    assert result[14] == get_3day_forecast(technical_report, 2)
 
 

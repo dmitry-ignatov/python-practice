@@ -178,7 +178,7 @@ def create_technical_report(location_response, forecast_response):
         "daily weather conditions": weather_conditions_daily,
         "temperature min": forecast_response["daily"]["temperature_2m_min"],
         "temperature max": forecast_response["daily"]["temperature_2m_max"],
-        "precipitation probability": forecast_response["daily"]["precipitation_probability_max"],
+        "precipitation probability": forecast_response["daily"]["precipitation_probability_max"]
     }
 
     return technical_report
