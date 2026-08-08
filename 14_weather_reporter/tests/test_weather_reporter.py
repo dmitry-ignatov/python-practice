@@ -2,8 +2,8 @@ import pytest
 
 from weather_reporter import (get_city_name, get_location_response, 
                               get_forecast_response, get_weather_conditions, 
-                              create_technical_report, get_weather_conditions, 
-                              get_3day_forecast, create_report)
+                              create_technical_report, get_3day_forecast, create_report, 
+                              save_report)
 import weather_reporter
 
 @pytest.fixture
@@ -121,11 +121,28 @@ def test_get_empty_location_response(monkeypatch,capsys):
 
     get_location_response("Ryazan")
     captured = capsys.readouterr()
-    
+
     assert captured.out == "Города с таким названием нет\n"
 
 
-def test_get_location_response_timout(monkeypatch,capsys):
+def test_get_location_response_error_code(monkeypatch, capsys):
+    fake_response = FakeResponse(404, {})
+
+    def fake_get_response(url, params, timeout):
+        return fake_response
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+    get_location_response("Рязань")
+    captured = capsys.readouterr()
+
+    assert captured.out == "Ошибка запроса\n"
+
+
+def test_get_location_response_timeout(monkeypatch,capsys):
     def fake_get_response(url, params, timeout):
         raise weather_reporter.requests.Timeout
 
@@ -138,6 +155,21 @@ def test_get_location_response_timout(monkeypatch,capsys):
     captured = capsys.readouterr()
 
     assert captured.out == "Превышено время ожидания\n"
+
+
+def test_get_location_response_Request_exception(monkeypatch,capsys):
+    def fake_get_response(url, params, timeout):
+        raise weather_reporter.requests.RequestException
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+    get_location_response("Ryazan")
+    captured = capsys.readouterr()
+
+    assert captured.out == "Ошибка соединения\n"
 
 
 def test_get_forecast_response(monkeypatch, location_response_data):
@@ -175,6 +207,38 @@ def test_get_forecast_response_error(monkeypatch, capsys, location_response_data
     assert captured.out == "Ошибка запроса\n"
 
 
+def test_get_forecast_response_timeout(monkeypatch, location_response_data, capsys):
+    def fake_get_response(url, params, timeout):
+        raise weather_reporter.requests.Timeout
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+
+    get_forecast_response(location_response_data)
+    captured = capsys.readouterr()
+
+    assert captured.out == "Превышено время ожидания\n"
+
+
+def test_get_forecast_response_Request_exception(monkeypatch, location_response_data, capsys):
+    def fake_get_response(url, params, timeout):
+        raise weather_reporter.requests.RequestException
+
+    monkeypatch.setattr(
+        weather_reporter.requests,
+        "get",
+        fake_get_response
+    )
+
+    get_forecast_response(location_response_data)
+    captured = capsys.readouterr()
+
+    assert captured.out == "Ошибка соединения\n"
+
+
 def test_get_weather_conditions_current(forecast_response_data):
 
     assert get_weather_conditions(forecast_response_data, "current") == ["пасмурно"]
@@ -183,6 +247,26 @@ def test_get_weather_conditions_current(forecast_response_data):
 def test_get_weather_conditions_daily(forecast_response_data):
 
     assert get_weather_conditions(forecast_response_data, "daily") == ["гроза", "гроза со слабым градом", "слабый дождь"]
+
+
+def test_get_weather_conditions_unknown_condition_current():
+    forecast_response = {
+        "current": 
+                    {
+                        "weather_code": 200
+                    }
+    }
+    assert get_weather_conditions(forecast_response, "current") == ["неизвестное погодное состояние"]
+
+
+def test_get_weather_conditions_unknown_condition_daily():
+    forecast_response = {
+        "daily": 
+                    {
+                        "weather_code": [200, 1, 200]
+                    }
+    }
+    assert get_weather_conditions(forecast_response, "daily") == ["неизвестное погодное состояние", "преимущественно ясно", "неизвестное погодное состояние"]
 
 
 def test_create_technical_report(location_response_data, forecast_response_data):
@@ -228,3 +312,18 @@ def test_create_report():
     assert result[14] == get_3day_forecast(technical_report, 2)
 
 
+def test_save_report(tmp_path, monkeypatch, location_response_data):
+    report = ["test"]
+
+    monkeypatch.setattr(
+        weather_reporter,
+        "__file__",
+        tmp_path / "_weather_report.py"
+    )
+
+    save_report(report, location_response_data)
+    files = list(tmp_path.glob("Рязань_*_weather_report.txt"))
+    assert len(files) == 1
+    with open(files[0], "r", encoding="utf-8") as file:
+        text = file.read()
+    assert text == "\n".join(report)
