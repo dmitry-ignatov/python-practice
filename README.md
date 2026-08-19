@@ -292,6 +292,25 @@
 
 ---
 
+### [15_task_api](15_task_api)
+
+Учебный REST API для управления задачами на FastAPI.
+
+API позволяет:
+
+* получать список всех задач;
+* получать отдельную задачу по `id`;
+* создавать задачи через `POST`;
+* изменять название задачи через `PATCH`;
+* удалять задачи через `DELETE`;
+* возвращать `404 Not Found` для отсутствующих задач;
+* принимать JSON-тело запроса через Pydantic-модели;
+* автоматически проверять основное поведение через 9 тестов с `TestClient`.
+
+Основные темы: FastAPI, REST API, HTTP-методы, endpoint, path parameters, Pydantic `BaseModel`, request body, CRUD, `HTTPException`, коды `200`, `201` и `404`, `TestClient`, `pytest`, fixture с `autouse=True` и изоляция состояния тестов.
+
+---
+
 ## Как запускать проекты
 
 Каждый проект находится в отдельной папке и содержит собственный `README.md` с подробным описанием.
@@ -414,6 +433,26 @@ python weather_reporter.py
 python -m pytest -v
 ```
 
+### Task API
+
+```bash
+cd 15_task_api
+python -m pip install "fastapi[standard]"
+python -m fastapi dev task_api.py
+```
+
+Документация API после запуска:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Тесты проекта:
+
+```bash
+python -m pytest -v
+```
+
 ## Статус
 
 Завершённые учебные проекты:
@@ -431,6 +470,7 @@ python -m pytest -v
 * `11_log_analyzer`;
 * `12_json_config_validator`;
 * `13_github_repo_reporter`;
-* `14_weather_reporter`.
+* `14_weather_reporter`;
+* `15_task_api`.
 
 Репозиторий продолжает пополняться новыми проектами по мере изучения Python.
