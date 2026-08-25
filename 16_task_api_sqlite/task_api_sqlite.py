@@ -50,56 +50,85 @@ def show_task(connection, task_id):
 
         return task_dict
 
-    else:
-        return None
+    return None
 
 
 
 @app.get("/tasks")
 def get_tasks():
     connection = connect_database()
-    tasks = show_tasks(connection)
-    return tasks
+    try:
+        tasks = show_tasks(connection)
+        
+        return tasks
+    finally:
+        connection.close()
 
 
 @app.get("/tasks/{task_id}")
 def get_task(task_id: int):
     connection = connect_database()
-    task = show_task(connection, task_id)
-    if task is not None:
-        return task
+    try:
+        task = show_task(connection, task_id)
+        if task is not None:
 
-    raise HTTPException(
-        status_code=404,
-        detail="Task not found"
-    )
+            return task
+
+        raise HTTPException(
+            status_code=404,
+            detail="Task not found"
+        )
+    finally:
+        connection.close()
 
 
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate):
-    created_task = task.title
     connection = connect_database()
-    cursor = connection.execute("INSERT INTO tasks (title) VALUES (?)", (created_task,))
-    connection.commit()
+    try:
+        created_task = task.title
+        cursor = connection.execute("INSERT INTO tasks (title) VALUES (?)", (created_task,))
+        connection.commit()
+        task_id = cursor.lastrowid
 
-    return {"id": cursor.lastrowid, "title": created_task}
+        return {"id": task_id, "title": created_task}
+    finally:
+        connection.close()
 
 
 @app.patch("/tasks/{task_id}")
 def update_task(task_id: int, task_update: TaskUpdate):
-    updated_task = task_update.title
     connection = connect_database()
-    if show_task(connection, task_id) is not None:
-        connection.execute("UPDATE tasks SET title = ? WHERE id = ?", (updated_task, task_id))
-        connection.commit()
+    try:
+        updated_task = task_update.title
+        if show_task(connection, task_id) is not None:
+            connection.execute("UPDATE tasks SET title = ? WHERE id = ?", (updated_task, task_id))
+            connection.commit()
 
-        return {"id": task_id, "title": updated_task}
+            return {"id": task_id, "title": updated_task}
 
-    raise HTTPException(
-            status_code=404,
-            detail="Task not found"
-        )
+        raise HTTPException(
+                status_code=404,
+                detail="Task not found"
+            )
+    finally:
+        connection.close()
 
 
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int):
+    connection = connect_database()
+    try:
+        task = show_task(connection, task_id)
+        if task is not None:
+            connection.execute("DELETE FROM tasks WHERE id = ?", (task_id,))
+            connection.commit()
 
+            return task
 
+        raise HTTPException(
+                status_code=404,
+                detail="Task not found"
+            )
+    finally:
+        connection.close()
