@@ -311,6 +311,27 @@ API позволяет:
 
 ---
 
+### [16_task_api_sqlite](16_task_api_sqlite)
+
+Учебный REST API для управления задачами на FastAPI с постоянным хранением данных в SQLite.
+
+API позволяет:
+
+* получать список всех задач из SQLite;
+* получать отдельную задачу по `id`;
+* создавать задачи через `POST` и получать созданный `id` через `cursor.lastrowid`;
+* изменять название задачи через `PATCH`;
+* удалять задачи через `DELETE`;
+* возвращать `404 Not Found` для отсутствующих задач;
+* сохранять данные между перезапусками приложения в `tasks.db`;
+* автоматически создавать таблицу `tasks` при запуске FastAPI через `lifespan`;
+* корректно закрывать соединения с БД через `try / finally`;
+* запускать тесты на отдельной временной SQLite-базе через `tmp_path` и `monkeypatch`.
+
+Основные темы: FastAPI, SQLite, `sqlite3`, REST API, CRUD, параметрические SQL-запросы, `fetchone()`, `fetchall()`, `cursor.lastrowid`, `commit()`, `try / finally`, `lifespan`, `asynccontextmanager`, `TestClient`, `pytest`, `tmp_path`, `monkeypatch` и изоляция тестовой базы.
+
+---
+
 ## Как запускать проекты
 
 Каждый проект находится в отдельной папке и содержит собственный `README.md` с подробным описанием.
@@ -453,6 +474,26 @@ http://127.0.0.1:8000/docs
 python -m pytest -v
 ```
 
+### Task API SQLite
+
+```bash
+cd 16_task_api_sqlite
+python -m pip install "fastapi[standard]"
+python -m fastapi dev task_api_sqlite.py
+```
+
+Документация API после запуска:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+Тесты проекта:
+
+```bash
+python -m pytest -v
+```
+
 ## Статус
 
 Завершённые учебные проекты:
@@ -471,6 +512,7 @@ python -m pytest -v
 * `12_json_config_validator`;
 * `13_github_repo_reporter`;
 * `14_weather_reporter`;
-* `15_task_api`.
+* `15_task_api`;
+* `16_task_api_sqlite`.
 
 Репозиторий продолжает пополняться новыми проектами по мере изучения Python.
