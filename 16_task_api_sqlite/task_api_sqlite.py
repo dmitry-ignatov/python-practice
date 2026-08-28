@@ -1,10 +1,18 @@
 import sqlite3
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
+
+DATABASE_PATH = "tasks.db"
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_database()
+    
+    yield
 
 
-
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 
 class TaskCreate(BaseModel):
@@ -17,15 +25,24 @@ class TaskUpdate(BaseModel):
 
 
 def connect_database():
-    connection = sqlite3.connect("tasks.db")
-    connection.execute("""
-                        CREATE TABLE IF NOT EXISTS tasks 
-                        (id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                        title TEXT)
-                        """)
-    connection.commit()
+    connection = sqlite3.connect(DATABASE_PATH)
 
     return connection
+
+
+def init_database():
+    connection = connect_database()
+    try:
+        connection.execute(
+                            """
+                            CREATE TABLE IF NOT EXISTS tasks 
+                            (id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                            title TEXT)
+                            """
+                            )
+        connection.commit()
+    finally:
+        connection.close()
 
 
 def show_tasks(connection):
