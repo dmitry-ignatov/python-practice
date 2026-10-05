@@ -10,6 +10,6 @@
 
 ## Запуск
 
-`python main.py`
+`python notes_database.py`
 
 База `notes.db` создаётся автоматически.
