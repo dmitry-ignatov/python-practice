@@ -8,6 +8,6 @@
 
 ## Запуск
 
-`python main.py`
+`python book_catalog.py`
 
 Данные сохраняются в `books.db`.
