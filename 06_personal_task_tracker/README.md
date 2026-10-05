@@ -13,4 +13,4 @@
 
 ## Запуск
 
-`python main.py`
+`python personal_task_tracker.py`
