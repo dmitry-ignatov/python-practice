@@ -10,4 +10,4 @@
 
 ## Запуск
 
-`python main.py`
+`python password_checker.py`
