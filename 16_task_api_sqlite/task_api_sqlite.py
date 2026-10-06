@@ -1,9 +1,11 @@
-import sqlite3
+import sqlite3, os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 
-DATABASE_PATH = "tasks.db"
+
+DATABASE_PATH = os.getenv("DATABASE_PATH", "tasks.db")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
